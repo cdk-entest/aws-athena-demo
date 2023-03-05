@@ -99,13 +99,18 @@ select * from data_table order by col6 desc limit 200;
 
 ## Create Table from Glue Crawler
 
+- create a glue crawler
+- crawl the data in s3
+- crawler creates a table in the specified database (default) in glue catalog
+- athena can see the table then query
+
 sample data
 
 ```sql
 s3://amazon-reviews-pds/parquet/
 ```
 
-then run a crawler in glue to create a table in data catalog. After ther craw completed, go to athena to query the dat a
+then run a crawler in glue to create a table in data catalog. After ther craw completed, go to athena to query the data
 
 ```sql
 select marketplace,
