@@ -17,10 +17,11 @@ export class AwsAthenaDemoStack extends cdk.Stack {
     const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
       name: "WorkGroupDemo",
       description: "demo",
+      // destroy stack can delete workgroup event not empy
       recursiveDeleteOption: false,
       state: "ENABLED",
       workGroupConfiguration: {
-        bytesScannedCutoffPerQuery: 1073741824,
+        bytesScannedCutoffPerQuery: 107374182400,
         engineVersion: {
           // pyspark not support in cloudformation
           // available in some regions at this moment
