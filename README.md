@@ -14,6 +14,11 @@ This shows using athena to query from s3. First step is to craw the data and und
 - option 2. use glue to craw
 - tables are stored in glue data catalog
 
+At this moment
+
+- Data catalog is created by glue and seen by athena
+- Query engine are athena or spark, but spark only avaiable in some regions
+
 ## Create Table from Query
 
 sample data (delimeter is tab \t)
