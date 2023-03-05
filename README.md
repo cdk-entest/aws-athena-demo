@@ -19,6 +19,55 @@ At this moment
 - Data catalog is created by glue and seen by athena
 - Query engine are athena or spark, but spark only avaiable in some regions
 
+## Stack 
+
+- data catalog is read from the glue data catalog which is default (only one)
+- the data catalog consits of tables 
+- athena groups to separate users 
+- saved/named quries for convinent 
+
+create an athena workgroup
+
+```ts 
+const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
+  name: "WorkGroupDemo",
+  description: "demo",
+  // destroy stack can delete workgroup event not empy
+  recursiveDeleteOption: false,
+  state: "ENABLED",
+  workGroupConfiguration: {
+    bytesScannedCutoffPerQuery: 107374182400,
+    engineVersion: {
+      // pyspark not support in cloudformation
+      // available in some regions at this moment
+      selectedEngineVersion: "AUTO",
+    },
+    requesterPaysEnabled: true,
+    publishCloudWatchMetricsEnabled: true,
+    resultConfiguration: {
+      // encryption default
+      outputLocation: props.s3,
+    },
+  },
+});
+```
+
+create named (saved) queries 
+
+```ts 
+new CfnNamedQuery(this, "CreateGdeltTable", {
+  name: "CreateGdeltTable",
+  database: "default",
+  workGroup: workgroup.ref,
+  queryString: fs.readFileSync(
+    path.join(__dirname, "./../query/gdelt.sql"),
+    {
+      encoding: "utf-8",
+    }
+  ),
+});
+```
+
 ## Create Table from Query
 
 sample data (delimeter is tab \t)
