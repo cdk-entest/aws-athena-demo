@@ -5,6 +5,8 @@ import { config } from "../config";
 
 const app = new cdk.App();
 new AwsAthenaDemoStack(app, "AwsAthenaDemoStack", {
+  // where to store query result
+  // s3://bucket-name/result/
   s3: config.s3,
   env: {
     region: "us-east-1",

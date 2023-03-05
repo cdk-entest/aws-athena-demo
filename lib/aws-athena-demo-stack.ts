@@ -1,7 +1,9 @@
 import * as cdk from "aws-cdk-lib";
 import { StackProps } from "aws-cdk-lib";
-import { CfnWorkGroup } from "aws-cdk-lib/aws-athena";
+import { CfnNamedQuery, CfnWorkGroup } from "aws-cdk-lib/aws-athena";
 import { Construct } from "constructs";
+import * as fs from "fs";
+import * as path from "path";
 
 interface AthenaProps extends StackProps {
   s3: string;
@@ -31,6 +33,19 @@ export class AwsAthenaDemoStack extends cdk.Stack {
           outputLocation: props.s3,
         },
       },
+    });
+
+    // saved queries
+    new CfnNamedQuery(this, "SaveQueries", {
+      name: "SaveQueries",
+      database: "default",
+      workGroup: workgroup.ref,
+      queryString: fs.readFileSync(
+        path.join(__dirname, "./../query/test.sql"),
+        {
+          encoding: "utf-8",
+        }
+      ),
     });
   }
 }
