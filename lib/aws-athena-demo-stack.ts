@@ -36,12 +36,25 @@ export class AwsAthenaDemoStack extends cdk.Stack {
     });
 
     // saved queries
-    new CfnNamedQuery(this, "SaveQueries", {
-      name: "SaveQueries",
+    new CfnNamedQuery(this, "CreateGdeltTable", {
+      name: "CreateGdeltTable",
       database: "default",
       workGroup: workgroup.ref,
       queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/test.sql"),
+        path.join(__dirname, "./../query/gdelt.sql"),
+        {
+          encoding: "utf-8",
+        }
+      ),
+    });
+
+    // save example query
+    new CfnNamedQuery(this, "QueryAmazonReview", {
+      name: "QueryAmazonReview",
+      database: "default",
+      workGroup: workgroup.ref,
+      queryString: fs.readFileSync(
+        path.join(__dirname, "./../query/amazon.sql"),
         {
           encoding: "utf-8",
         }
