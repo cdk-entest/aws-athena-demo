@@ -2,7 +2,7 @@
   "name": "aws-athena-demo",
   "version": "0.1.0",
   "bin": {
-    "aws-athena-demo": "bin/aws-athena-demo.js"
+    "aws-athena-demo": "bin/aws-athena-demo.ts"
   },
   "scripts": {
     "build": "tsc",
