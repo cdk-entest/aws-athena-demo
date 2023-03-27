@@ -19,16 +19,16 @@ At this moment
 - Data catalog is created by glue and seen by athena
 - Query engine are athena or spark, but spark only avaiable in some regions
 
-## Stack 
+## Stack
 
 - data catalog is read from the glue data catalog which is default (only one)
-- the data catalog consits of tables 
-- athena groups to separate users 
-- saved/named quries for convinent 
+- the data catalog consits of tables
+- athena groups to separate users
+- saved/named quries for convinent
 
 create an athena workgroup
 
-```ts 
+```ts
 const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
   name: "WorkGroupDemo",
   description: "demo",
@@ -52,19 +52,16 @@ const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
 });
 ```
 
-create named (saved) queries 
+create named (saved) queries
 
-```ts 
+```ts
 new CfnNamedQuery(this, "CreateGdeltTable", {
   name: "CreateGdeltTable",
   database: "default",
   workGroup: workgroup.ref,
-  queryString: fs.readFileSync(
-    path.join(__dirname, "./../query/gdelt.sql"),
-    {
-      encoding: "utf-8",
-    }
-  ),
+  queryString: fs.readFileSync(path.join(__dirname, "./../query/gdelt.sql"), {
+    encoding: "utf-8",
+  }),
 });
 ```
 
@@ -336,3 +333,22 @@ actiongeo_long
 actiongeo_featureid
 dateadded
 ```
+
+## Troubleshooting
+
+Check s3 data size
+
+```bash
+aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
+aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
+```
+
+slow query in athena 
+
+```sql 
+select globaleventid, sum(fractiondate), yearn from data_table group by (globaleventid, yearn)
+```
+
+## Reference
+
+- [Athena Data Limit](https://docs.aws.amazon.com/athena/latest/ug/workgroups-setting-control-limits-cloudwatch.html)
