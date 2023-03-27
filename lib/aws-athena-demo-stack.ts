@@ -1,17 +1,24 @@
 import * as cdk from "aws-cdk-lib";
-import { StackProps } from "aws-cdk-lib";
+import { RemovalPolicy, StackProps } from "aws-cdk-lib";
 import { CfnNamedQuery, CfnWorkGroup } from "aws-cdk-lib/aws-athena";
 import { Construct } from "constructs";
 import * as fs from "fs";
 import * as path from "path";
 
 interface AthenaProps extends StackProps {
-  s3: string;
+  bucketName: string;
 }
 
 export class AwsAthenaDemoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AthenaProps) {
     super(scope, id, props);
+
+    // create s3 query result
+    const bucket = new cdk.aws_s3.Bucket(this, "AthenaQueryResultBucket", {
+      bucketName: props.bucketName,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
 
     // create workgroup
     const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
@@ -31,7 +38,7 @@ export class AwsAthenaDemoStack extends cdk.Stack {
         publishCloudWatchMetricsEnabled: true,
         resultConfiguration: {
           // encryption default
-          outputLocation: props.s3,
+          outputLocation: `s3://${bucket.bucketName}/athena-query-result/`,
         },
       },
     });
@@ -56,6 +63,19 @@ export class AwsAthenaDemoStack extends cdk.Stack {
       workGroup: workgroup.ref,
       queryString: fs.readFileSync(
         path.join(__dirname, "./../query/amazon.sql"),
+        {
+          encoding: "utf-8",
+        }
+      ),
+    });
+
+    // save query
+    new CfnNamedQuery(this, "CreateAmazonReviewTable", {
+      name: "CreateAmazonReviewtable",
+      database: "default",
+      workGroup: workgroup.ref,
+      queryString: fs.readFileSync(
+        path.join(__dirname, "./../query/amazon_review.sql"),
         {
           encoding: "utf-8",
         }
