@@ -343,10 +343,28 @@ aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parqu
 aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
 ```
 
-slow query in athena 
+slow query in athena
 
 ```sql 
 select globaleventid, sum(fractiondate), yearn from data_table group by (globaleventid, yearn)
+```
+
+compare tsv.gz with parquet (columnar base), compare size, and query performance 
+
+```bash 
+aws s3 cp s3://amazon-reviews-pds/tsv/amazon_reviews_us_Watches_v1_00.tsv.gz
+```
+
+query 
+
+```sql 
+select marketplace,
+	sum(total_votes) as sumvotes,
+	product_title
+from amazon_review_parquet
+group by marketplace,
+	product_title
+order by sumvotes desc;
 ```
 
 ## Reference
