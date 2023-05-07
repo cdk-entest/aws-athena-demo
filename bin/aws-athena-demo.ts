@@ -5,11 +5,10 @@ import { config } from "../config";
 
 const app = new cdk.App();
 new AwsAthenaDemoStack(app, "AwsAthenaDemoStack", {
-  // where to store query result
-  // s3://bucket-name/result/
-  s3: config.s3,
+  destS3BucketName: config.destS3BucketName,
+  sourceS3BucketName: config.sourceS3BucketName,
   env: {
-    region: "us-east-1",
+    region: process.env.CDK_REGION_DEFAULT,
     account: process.env.CDK_ACCOUNT_DEFAULT,
   },
 });
