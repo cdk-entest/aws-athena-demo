@@ -188,68 +188,11 @@ It is quite straightfoward to create table using Glue Crawler
 - Create a new table, parquet format from result of a query
 
 ```sql
-CREATE TABLE IF NOT EXISTS data_table_parquet_test WITH (
+CREATE TABLE IF NOT EXISTS ctas WITH (
 	format = 'PARQUET',
-	external_location = 's3://bucket-name/new-data-parquet/'
+	external_location = 's3://athena-query-result-haimtran/new-data-parquet/'
 ) AS
-SELECT globaleventid,
-	sqldate,
-	monthyear,
-	yearn,
-	fractiondate,
-	actor1code,
-	actor1name,
-	actor1countrycode,
-	actor1knowngroupcode,
-	actor1ethniccode,
-	actor1religion1code,
-	actor1religion2code,
-	actor1type1code,
-	actor1type2code,
-	actor1type3code,
-	actor2code,
-	actor2name,
-	actor2countrycode,
-	actor2knowngroupcode,
-	actor2ethniccode,
-	actor2religion1code,
-	actor2religion2code,
-	actor2type1code,
-	actor2type2code,
-	actor2type3code,
-	isrootevent,
-	eventcode,
-	eventbasecode,
-	eventrootcode,
-	quadclass,
-	goldsteinscale,
-	nummentions,
-	numsources,
-	numarticles,
-	avgtone,
-	actor1geo_type,
-	actor1geo_fullname,
-	actor1geo_countrycode,
-	actor1geo_adm1code,
-	actor1geo_lat,
-	actor1geo_long,
-	actor1geo_featureid,
-	actor2geo_type,
-	actor2geo_fullname,
-	actor2geo_countrycode,
-	actor2geo_adm1code,
-	actor2geo_lat,
-	actor2geo_long,
-	actor2geo_featureid,
-	actiongeo_type,
-	actiongeo_fullname,
-	actiongeo_countrycode,
-	actiongeo_adm1code,
-	actiongeo_lat,
-	actiongeo_long,
-	actiongeo_featureid,
-	dateadded
-FROM hai_table
+SELECT customer_id, product_id, star_rating FROM parquet
 ```
 
 print columns
