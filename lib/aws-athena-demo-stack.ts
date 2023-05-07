@@ -12,6 +12,11 @@ interface AthenaProps extends StackProps {
   sourceS3BucketName: string;
 }
 
+export enum AthenaAnalyticEngine {
+  PySpark = "PySpark engine version 3",
+  Athena = "Athena engine version 3",
+}
+
 export class AwsAthenaDemoStack extends Stack {
   constructor(scope: Construct, id: string, props: AthenaProps) {
     super(scope, id, props);
@@ -87,7 +92,7 @@ export class AwsAthenaDemoStack extends Stack {
         engineVersion: {
           // pyspark not support in cloudformation
           // available in some regions at this moment
-          selectedEngineVersion: "Athena engine version 3",
+          selectedEngineVersion: AthenaAnalyticEngine.Athena,
         },
         requesterPaysEnabled: true,
         publishCloudWatchMetricsEnabled: true,
@@ -109,7 +114,7 @@ export class AwsAthenaDemoStack extends Stack {
         bytesScannedCutoffPerQuery: 107374182400,
         engineVersion: {
           // effectiveEngineVersion: "",
-          selectedEngineVersion: "PySpark engine version 3",
+          selectedEngineVersion: AthenaAnalyticEngine.PySpark,
         },
         requesterPaysEnabled: true,
         publishCloudWatchMetricsEnabled: false,
