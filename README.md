@@ -241,3 +241,7 @@ Useful vim command to insert comma to end of each column line name
 - [Amazon Reviews Dataset](https://s3.amazonaws.com/amazon-reviews-pds/readme.html)
 
 - [Athena shorcuts](https://aws.amazon.com/blogs/big-data/improve-productivity-by-using-keyboard-shortcuts-in-amazon-athena-query-editor/)
+
+- [Athena SerDe](https://docs.aws.amazon.com/athena/latest/ug/lazy-simple-serde.html)
+
+- [DDL Statement](https://docs.aws.amazon.com/athena/latest/ug/ddl-reference.html)
