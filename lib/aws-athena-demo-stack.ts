@@ -1,6 +1,6 @@
 import { Stack } from "aws-cdk-lib";
-import { aws_iam } from "aws-cdk-lib";
-import { StackProps } from "aws-cdk-lib";
+import { aws_iam, aws_s3 } from "aws-cdk-lib";
+import { RemovalPolicy, StackProps } from "aws-cdk-lib";
 import { CfnNamedQuery, CfnWorkGroup } from "aws-cdk-lib/aws-athena";
 import { Effect } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
@@ -18,6 +18,13 @@ export class AwsAthenaDemoStack extends Stack {
 
     //
     const sparkWorkGroupName: string = "SparkWorkGroup";
+
+    // create s3 query result
+    const bucket = new aws_s3.Bucket(this, "AthenaQueryResultBucket", {
+      bucketName: props.destS3BucketName,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
 
     // execution role for athena spark (for notebook)
     const role = new aws_iam.Role(this, "AthenaExecutionRoleDemo", {
@@ -132,6 +139,19 @@ export class AwsAthenaDemoStack extends Stack {
       workGroup: workgroup.ref,
       queryString: fs.readFileSync(
         path.join(__dirname, "./../query/amazon.sql"),
+        {
+          encoding: "utf-8",
+        }
+      ),
+    });
+
+    // save query
+    new CfnNamedQuery(this, "CreateAmazonReviewTable", {
+      name: "CreateAmazonReviewtable",
+      database: "default",
+      workGroup: workgroup.ref,
+      queryString: fs.readFileSync(
+        path.join(__dirname, "./../query/amazon_review.sql"),
         {
           encoding: "utf-8",
         }

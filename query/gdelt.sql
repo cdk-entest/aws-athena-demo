@@ -60,5 +60,5 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `default`.`data_table` (
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES ('field.delim' = '\t')
 STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION 's3://bucket-name/data/'
+LOCATION 's3://gdelt-open-data/events/'
 TBLPROPERTIES ('classification' = 'csv');
