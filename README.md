@@ -135,12 +135,7 @@ select marketplace, customer_id, review_id, star_rating, review_body from mytabl
 
 ## Create Table - CSV Data
 
-- Use the same amazon-reviews-pds but source the tsv data
-- Download gz.tsv from s3://amazon-reviews-pds/tsv/ and extract to tsv
-
-```bash
-gzip -d abc.gz.tsv
-```
+Use the same amazon-reviews-pds but source the tsv data.
 
 ```sql
 create external table tsv (
@@ -272,81 +267,18 @@ useful vim command to insert comman to end of each column line name
 :%/s/$/,/g
 ```
 
-## Quicksight with Athena
-
-first need to ensure that quicksight allowed to access data in s3 and athena
-
-- quicksight login https://us-east-1.quicksight.aws.amazon.com/
-- goto manage quicksight
-- goto security and permission
-- create a new dataset with athena
-- can select direct query
-- now do the analysis and visualization
-
 ## Troubleshooting
 
 - data with null value
 - delimeter comman or tab
 - format such as parquet, csv
 
-```
-globaleventid
-sqldate
-monthyear
-yearn
-fractiondate
-actor1code
-actor1name
-actor1countrycode
-actor1knowngroupcode
-actor1ethniccode
-actor1religion1code
-actor1religion2code
-actor1type1code
-actor1type2code
-actor1type3code
-actor2code
-actor2name
-actor2countrycode
-actor2knowngroupcode
-actor2ethniccode
-actor2religion1code
-actor2religion2code
-actor2type1code
-actor2type2code
-actor2type3code
-isrootevent
-eventcode
-eventbasecode
-eventrootcode
-quadclass
-goldsteinscale
-nummentions
-numsources
-numarticles
-avgtone
-actor1geo_type
-actor1geo_fullname
-actor1geo_countrycode
-actor1geo_adm1code
-actor1geo_lat
-actor1geo_long
-actor1geo_featureid
-actor2geo_type
-actor2geo_fullname
-actor2geo_countrycode
-actor2geo_adm1code
-actor2geo_lat
-actor2geo_long
-actor2geo_featureid
-actiongeo_type
-actiongeo_fullname
-actiongeo_countrycode
-actiongeo_adm1code
-actiongeo_lat
-actiongeo_long
-actiongeo_featureid
-dateadded
+some slow queries
+
+```sql
+select customer_id, product_id, sum(star_rating) as sum_rating from parquet
+group by customer_id, product_id
+order by sum_rating desc;
 ```
 
 ## Troubleshooting
@@ -358,30 +290,6 @@ aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parqu
 aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
 ```
 
-slow query in athena
-
-```sql
-select globaleventid, sum(fractiondate), yearn from data_table group by (globaleventid, yearn)
-```
-
-compare tsv.gz with parquet (columnar base), compare size, and query performance
-
-```bash
-aws s3 cp s3://amazon-reviews-pds/tsv/amazon_reviews_us_Watches_v1_00.tsv.gz
-```
-
-query
-
-```sql
-select marketplace,
-	sum(total_votes) as sumvotes,
-	product_title
-from amazon_review_parquet
-group by marketplace,
-	product_title
-order by sumvotes desc;
-```
-
 ## Reference
 
 - [Athena Data Limit](https://docs.aws.amazon.com/athena/latest/ug/workgroups-setting-control-limits-cloudwatch.html)
@@ -389,3 +297,5 @@ order by sumvotes desc;
 - [Athena Create Table Paritions](https://repost.aws/knowledge-center/athena-create-use-partitioned-tables)
 
 - [Amazon Reviews Dataset](https://s3.amazonaws.com/amazon-reviews-pds/readme.html)
+
+- [Athena shorcuts](https://aws.amazon.com/blogs/big-data/improve-productivity-by-using-keyboard-shortcuts-in-amazon-athena-query-editor/)
