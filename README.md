@@ -84,7 +84,7 @@ const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
 });
 ```
 
-## Create External Table Example 1
+## Create Table - Parquet Data
 
 - Example 1: amazon-reviews-pds dataset (parquet with partitions)
 
@@ -133,7 +133,7 @@ Finally query the new created table
 select marketplace, customer_id, review_id, star_rating, review_body from mytable limit 10;
 ```
 
-## Create External Table Example 2
+## Create Table - CSV Data
 
 Sample data (delimeter is tab \t) or so-called TSV
 
