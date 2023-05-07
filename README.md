@@ -226,7 +226,7 @@ aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parqu
 aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
 ```
 
-Useful vim command to insert comman to end of each column line name
+Useful vim command to insert comma to end of each column line name
 
 ```bash
 :%/s/$/,/g
