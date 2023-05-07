@@ -1,5 +1,5 @@
 ---
-title: Getting Started with Athena
+title: getting started with athena
 description: getting started with athena
 author: haimtran
 publishedDate: 03/05/2022
@@ -23,7 +23,7 @@ It is noted that
 - Queries can be saved and load
 - Notebook and be exported and imported
 
-## Athena WorkGroup 
+## Athena WorkGroup
 
 Enum to select Athena query or PySpark
 
@@ -84,9 +84,58 @@ const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
 });
 ```
 
-## Create Table from Query
+## Create External Table Example 1
 
-sample data (delimeter is tab \t)
+- Example 1: amazon-reviews-pds dataset (parquet with partitions)
+
+Use the s3://amazon-reviews-pds/parquet to create a table and then query
+
+```sql
+create external table mytable (
+ marketplace string,
+ customer_id string,
+ review_id string,
+ product_id string,
+ product_parent string,
+ product_title string,
+ star_rating int,
+ helpful_votes int,
+ total_votes int,
+ vine string,
+ verified_purchase string,
+ review_headline string,
+ review_body string,
+ review_date string,
+ `year` int)
+partitioned by (product_category string)
+row format serde 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+stored as inputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+outputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+location "s3://amazon-reviews-pds/parquet/"
+tblproperties ("classification"="parquet")
+```
+
+We might need to update partitions by using MSCK
+
+```sql
+msck repair table mytable;
+```
+
+Or use the ALTER sql
+
+```sql
+ALTER TABLE mytable SET LOCATION 's3://amazon-reviews-pds/parquet/product_category=Gift_Card/';
+```
+
+Finally query the new created table
+
+```sql
+select marketplace, customer_id, review_id, star_rating, review_body from mytable limit 10;
+```
+
+## Create External Table Example 2
+
+Sample data (delimeter is tab \t) or so-called TSV
 
 ```sql
 s3://gdelt-open-data/events/1979.csv
@@ -169,32 +218,19 @@ select * from data_table order by col6 desc limit 200;
 
 ## Create Table from Glue Crawler
 
-- create a glue crawler
-- crawl the data in s3
-- crawler creates a table in the specified database (default) in glue catalog
-- athena can see the table then query
+- Example 1: amazon-review-pds/parquet
+- Example 2: amazon-review-pds/tsv
 
-sample data
+It is quite straightfoward to create table using Glue Crawler
 
-```sql
-s3://amazon-reviews-pds/parquet/
-```
+- Create an IAM role for Glue Crawler
+- Create a Glue Crawler and specify the data source in S3
+- After the crawler complete, you can query the table from Athena
 
-then run a crawler in glue to create a table in data catalog. After ther craw completed, go to athena to query the data
+## Create Table Using CTAS
 
-```sql
-select marketplace,
-	sum(total_votes) as sumvotes,
-	product_title
-from amazon_review_glue_test_05032023parquet
-group by marketplace,
-	product_title
-order by sumvotes desc;
-```
-
-## Create Table from Query Result
-
-it is possible create a new table and parquet data from result of a query
+- CTAS means CREATE TABLE AS SELECT
+- Create a new table, parquet format from result of a query
 
 ```sql
 CREATE TABLE IF NOT EXISTS data_table_parquet_test WITH (
