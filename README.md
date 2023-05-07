@@ -8,60 +8,79 @@ date: 2022-03-05
 
 ## Introduction
 
-This shows using athena to query from s3. First step is to craw the data and understand its structure or create tables in data cata log. Then athena can query data in s3.
+[GitHub] this note shows
 
-- option 1. directy create table
-- option 2. use glue to craw
-- tables are stored in glue data catalog
+- Create Athena workgroup for query
+- Create PySpark workgroup for interactive Spark
+- Create table by Glue Crawler then query with Athena
+- Create an external table from Athena editor
 
-At this moment
+It is noted that
 
 - Data catalog is created by glue and seen by athena
 - Query engine are athena or spark, but spark only avaiable in some regions
+- Have to terminate Spark sessions before deleting workgroups
+- Queries can be saved and load
+- Notebook and be exported and imported
 
-## Stack
+## Athena WorkGroup 
 
-- data catalog is read from the glue data catalog which is default (only one)
-- the data catalog consits of tables
-- athena groups to separate users
-- saved/named quries for convinent
+Enum to select Athena query or PySpark
 
-create an athena workgroup
+```ts
+export enum AthenaAnalyticEngine {
+  PySpark = "PySpark engine version 3",
+  Athena = "Athena engine version 3",
+}
+```
+
+Create an Athena workgroup for SQL query
 
 ```ts
 const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
   name: "WorkGroupDemo",
   description: "demo",
   // destroy stack can delete workgroup event not empy
-  recursiveDeleteOption: false,
+  recursiveDeleteOption: true,
   state: "ENABLED",
   workGroupConfiguration: {
     bytesScannedCutoffPerQuery: 107374182400,
     engineVersion: {
       // pyspark not support in cloudformation
       // available in some regions at this moment
-      selectedEngineVersion: "AUTO",
+      selectedEngineVersion: AthenaAnalyticEngine.Athena,
     },
     requesterPaysEnabled: true,
     publishCloudWatchMetricsEnabled: true,
     resultConfiguration: {
       // encryption default
-      outputLocation: props.s3,
+      outputLocation: `s3://${props.destS3BucketName}/`,
     },
   },
 });
 ```
 
-create named (saved) queries
+Create an Athena workgroup with PySpark
 
 ```ts
-new CfnNamedQuery(this, "CreateGdeltTable", {
-  name: "CreateGdeltTable",
-  database: "default",
-  workGroup: workgroup.ref,
-  queryString: fs.readFileSync(path.join(__dirname, "./../query/gdelt.sql"), {
-    encoding: "utf-8",
-  }),
+const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
+  name: sparkWorkGroupName,
+  description: "spark",
+  recursiveDeleteOption: true,
+  state: "ENABLED",
+  workGroupConfiguration: {
+    executionRole: role.roleArn,
+    bytesScannedCutoffPerQuery: 107374182400,
+    engineVersion: {
+      // effectiveEngineVersion: "",
+      selectedEngineVersion: AthenaAnalyticEngine.PySpark,
+    },
+    requesterPaysEnabled: true,
+    publishCloudWatchMetricsEnabled: false,
+    resultConfiguration: {
+      outputLocation: `s3://${props.destS3BucketName}/`,
+    },
+  },
 });
 ```
 
@@ -345,19 +364,19 @@ aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
 
 slow query in athena
 
-```sql 
+```sql
 select globaleventid, sum(fractiondate), yearn from data_table group by (globaleventid, yearn)
 ```
 
-compare tsv.gz with parquet (columnar base), compare size, and query performance 
+compare tsv.gz with parquet (columnar base), compare size, and query performance
 
-```bash 
+```bash
 aws s3 cp s3://amazon-reviews-pds/tsv/amazon_reviews_us_Watches_v1_00.tsv.gz
 ```
 
-query 
+query
 
-```sql 
+```sql
 select marketplace,
 	sum(total_votes) as sumvotes,
 	product_title
