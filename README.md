@@ -204,14 +204,9 @@ WHERE TABLE_NAME = 'data_table'
 
 ```
 
-useful vim command to insert comman to end of each column line name
-
-```bash
-:%/s/$/,/g
-```
-
 ## Troubleshooting
 
+- check s3 bucket size
 - data with null value
 - delimeter comman or tab
 - format such as parquet, csv
@@ -224,13 +219,17 @@ group by customer_id, product_id
 order by sum_rating desc;
 ```
 
-## Troubleshooting
-
 Check s3 data size
 
 ```bash
 aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
 aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
+```
+
+Useful vim command to insert comman to end of each column line name
+
+```bash
+:%/s/$/,/g
 ```
 
 ## Reference
