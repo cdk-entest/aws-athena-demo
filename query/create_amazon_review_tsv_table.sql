@@ -15,6 +15,12 @@ review_headline string,
 review_body string, 
 review_date date,
 year int)
+--row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+--WITH SERDEPROPERTIES(
+--    'field.delim' = '\t',
+--    'escape.delim' = '\\',
+--    'line.delim' = '\n'
+--)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 ESCAPED BY '\\'

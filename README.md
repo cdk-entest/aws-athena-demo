@@ -169,6 +169,37 @@ create external table tsv (
  tblproperties ("classification"="csv", "skip.header.line.count"="1")
 ```
 
+Or specifing serde and SERDEPROPERTIES as below 
+
+```sql 
+create external table tsvtest (
+ marketplace string,
+ customer_id string,
+ review_id string,
+ product_id string,
+ product_parent string,
+ product_title string,
+ star_rating int,
+ helpful_votes int,
+ total_votes int,
+ vine string,
+ verified_purchase string,
+ review_headline string,
+ review_body string,
+ review_date string,
+ `year` int)
+row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES(
+    'field.delim' = '\t',
+    'escape.delim' = '\\',
+    'line.delim' = '\n'
+)
+stored as inputformat 'org.apache.hadoop.mapred.TextInputFormat'
+outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+location "s3://athena-query-result-haimtran-us-east-1-08052023/tsv/"
+tblproperties ("classification"="csv", "skip.header.line.count"="1")
+```
+
 You might need to update partition and metadata using MSCK
 
 ```sql
