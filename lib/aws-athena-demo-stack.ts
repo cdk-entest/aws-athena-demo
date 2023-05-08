@@ -176,5 +176,17 @@ export class AwsAthenaDemoStack extends Stack {
       ),
     });
 
+     // ctas create a new table  
+    new CfnNamedQuery(this, "CreateTableWithCTASEx1", {
+      name: "CTASExample1",
+      database: "default",
+      workGroup: workgroup.ref,
+      queryString: fs.readFileSync(
+        path.join(__dirname, "./../query/ctas_example_1.sql"),
+        {
+          encoding: "utf-8",
+        }
+      ),
+    });
   }
 }
