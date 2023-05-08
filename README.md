@@ -209,12 +209,25 @@ It is quite straightfoward to create table using Glue Crawler
 ## Create Table Using CTAS
 
 - CTAS means CREATE TABLE AS SELECT
-- Create a new table, parquet format from result of a query
+- Create a new table, parquet format from result of a query, same location 
+- Create a new table, parquet format from result of a query, external location 
+
+First, create a new table in the same location bucket. The partition key should placed at the last. 
+
+```sql 
+CREATE TABLE IF NOT EXISTS ctas_parquet_same_location(
+    format='parquet',
+    partitioned_by = ARRAY['marketplace']
+) AS 
+SELECT customer_id, product_id, star_rating, marketplace from amazon_reviews_tsv; 
+```
+
+Second, create the new table in an external location 
 
 ```sql
 CREATE TABLE IF NOT EXISTS ctas WITH (
 	format = 'PARQUET',
-	external_location = 's3://athena-query-result-haimtran/new-data-parquet/'
+	external_location = 's3://athena-query-result-entest/new-data-parquet/'
 ) AS
 SELECT customer_id, product_id, star_rating FROM parquet
 ```
@@ -225,7 +238,6 @@ print columns
 SELECT *
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = 'data_table'
-
 ```
 
 ## Troubleshooting
