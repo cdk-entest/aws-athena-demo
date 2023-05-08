@@ -1,0 +1,1 @@
+msck repair table mytable;

@@ -91,7 +91,7 @@ const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
 Use the s3://amazon-reviews-pds/parquet to create a table and then query
 
 ```sql
-create external table mytable (
+create external table amazon_reviews_parquet_table (
  marketplace string,
  customer_id string,
  review_id string,
@@ -170,6 +170,30 @@ You might need to update partition and metadata using MSCK
 ```sql
 msck repair table mytable;
 ```
+
+## Parquet versus TSV 
+
+Create the same query with two tables to see performance and cost. First, for the tsv table 
+
+```sql 
+select customer_id, sum(star_rating) as sum_rating 
+from amazon_reviews_tsv
+group by customer_id 
+order by sum_rating desc;
+```
+
+and for parquet table 
+
+```sql 
+select customer_id, sum(star_rating) as sum_rating 
+from amazon_reviews_parquet
+group by customer_id 
+order by sum_rating desc; 
+```
+
+- tsv: scanned 32.22 GB and runtime 97 seconds 
+- parquet: scanned 1.21 GB and runtime 38 seconds 
+- check time in queue 
 
 ## Create Table from Glue Crawler
 

@@ -85,7 +85,7 @@ export class AwsAthenaDemoStack extends Stack {
       name: "WorkGroupDemo",
       description: "demo",
       // destroy stack can delete workgroup event not empy
-      recursiveDeleteOption: false,
+      recursiveDeleteOption: true,
       state: "ENABLED",
       workGroupConfiguration: {
         bytesScannedCutoffPerQuery: 107374182400,
@@ -137,30 +137,44 @@ export class AwsAthenaDemoStack extends Stack {
       ),
     });
 
-    // save example query
-    new CfnNamedQuery(this, "QueryAmazonReview", {
-      name: "QueryAmazonReview",
+    // query to create amazon_reviews_tsv_table 
+    new CfnNamedQuery(this, "AmazonReviewTsvTable", {
+      name: "CreateAmazonReviewTsvTable",
       database: "default",
       workGroup: workgroup.ref,
       queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/amazon.sql"),
+        path.join(__dirname, "./../query/create_amazon_review_tsv_table.sql"),
         {
           encoding: "utf-8",
         }
       ),
     });
 
-    // save query
-    new CfnNamedQuery(this, "CreateAmazonReviewTable", {
-      name: "CreateAmazonReviewtable",
+    // create amazon_reviews_parquet_table  
+    new CfnNamedQuery(this, "AmazonReviewParquetTable", {
+      name: "CreateAmazonReviewParquettable",
       database: "default",
       workGroup: workgroup.ref,
       queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/amazon_review.sql"),
+        path.join(__dirname, "./../query/create_amazon_review_parquet_table.sql"),
         {
           encoding: "utf-8",
         }
       ),
     });
+
+     // msk fix partition of table 
+    new CfnNamedQuery(this, "MSKRepairAmazonReviewParquetTable", {
+      name: "FixAmazonReviewParquettable",
+      database: "default",
+      workGroup: workgroup.ref,
+      queryString: fs.readFileSync(
+        path.join(__dirname, "./../query/msk_repair_parquet_table.sql"),
+        {
+          encoding: "utf-8",
+        }
+      ),
+    });
+
   }
 }

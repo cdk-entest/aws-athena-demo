@@ -1,4 +1,3 @@
-
 CREATE EXTERNAL TABLE amazon_reviews_tsv (
 marketplace string, 
 customer_id string, 
