@@ -159,15 +159,14 @@ create external table tsv (
  review_body string,
  review_date string,
  `year` int)
--- ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
--- FIELDS TERMINATED BY '\t'
--- ESCAPED BY '\\'
--- LINES TERMINATED BY '\n'
--- row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
--- stored as inputformat 'org.apache.hadoop.mapred.TextInputFormat'
--- outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-location "s3://athena-query-result-haimtran/tsv/"
-tblproperties ("classification"="csv", "skip.header.line.count"="1")
+ ROW FORMAT DELIMITED
+ FIELDS TERMINATED BY '\t'
+ ESCAPED BY '\\'
+ LINES TERMINATED BY '\n'
+ stored as inputformat 'org.apache.hadoop.mapred.TextInputFormat'
+ outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+ location "s3://my-bucket/tsv/"
+ tblproperties ("classification"="csv", "skip.header.line.count"="1")
 ```
 
 You might need to update partition and metadata using MSCK
