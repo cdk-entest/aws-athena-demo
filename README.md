@@ -134,6 +134,11 @@ select marketplace, customer_id, review_id, star_rating, review_body from mytabl
 ```
 
 ## Create Table - CSV Data
+As the amazon-reviews-pds tsv prefix container some noisy files such as index.txt, you need to exclude it while creating a new table in Athena. I work around this by copy tsv.gz data to my own S3 bucket first. 
+
+```bash 
+aws s3 cp s3://amazon-reviews-pds/tsv/ s3://my-bucket/tsv/ --exclude '*' --include '*.tsv.gz' --recursive
+```
 
 Use the same amazon-reviews-pds but source the tsv data.
 
