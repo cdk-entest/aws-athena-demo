@@ -572,3 +572,7 @@ policy.attachToUser(user);
 - [Glue Worker Type](https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
 
 - [Glue Pricing](https://aws.amazon.com/glue/pricing/)
+
+- [Glue notebook magics](https://docs.aws.amazon.com/glue/latest/dg/interactive-sessions-magics.html)
+
+- [Athena spark notebook magics](https://docs.aws.amazon.com/athena/latest/ug/notebooks-spark-magics.html)
