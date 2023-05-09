@@ -455,6 +455,7 @@ const policy = new aws_iam.Policy(
 - Create an IAM Role for Glue
 - Create a Glue Notebook or interactive session
 - Read data from Glue catalog, S3
+- AWSGlueServiceRoleNotebook name convention and iam:PassRole [here](https://docs.aws.amazon.com/glue/latest/dg/create-an-iam-role.html)
 
 ```ts
 const role = new aws_iam.Role(this, `GlueRoleFor-${props.pipelineName}`, {
@@ -473,47 +474,54 @@ role.addManagedPolicy(
 );
 ```
 
-Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gule role
+Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gule role. The notebook need to pass role to the execution session, so there are to options
+
+- Explicit sepcify iam:PassRole in the policy below
+- Follow the role name convetion such as AWSGlueServiceRoleNotebook
 
 ```ts
-    const policy = new aws_iam.Policy(
-      this,
-      "LeastPriviledgePolicyForDataScientist",
-      {
-        policyName: "LeastPriviledgePolicyForDataScientist",
-        statements: [
-          // athena
-          new aws_iam.PolicyStatement({
-            actions: ["athena:*"],
-            effect: Effect.ALLOW,
-            resources: ["*"],
-          }),
-          // access s3
-          new aws_iam.PolicyStatement({
-            actions: [
-              "s3:*"
-            ],
-            effect: Effect.ALLOW,
-            resources: [
-              props.athenaResultBucketArn,
-              `${props.athenaResultBucketArn}/*`,
-              props.sourceBucketArn,
-              `${props.sourceBucketArn}/*`,
-            ],
-          }),
-          // access glue catalog
-          new aws_iam.PolicyStatement({
-            actions: [
-              "glue:*",
-            ],
-            effect: Effect.ALLOW,
-            resources: [
-              `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
-              `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
-              `arn:aws:glue:${this.region}:*:*catalog`,
-            ],
-          }),
-      }
+const policy = new aws_iam.Policy(
+  this,
+  "LeastPriviledgePolicyForGlueNotebookRole",
+  {
+    policyName: "LeastPriviledgePolicyForGlueNotebookRole",
+    statements: [
+      // pass iam role
+      new aws_iam.PolicyStatement({
+        actions: ["iam:PassRole", "iam:GetRole"],
+        effect: Effect.ALLOW,
+        resources: ["*"],
+      }),
+      // athena
+      new aws_iam.PolicyStatement({
+        actions: ["athena:*"],
+        effect: Effect.ALLOW,
+        resources: ["*"],
+      }),
+      // access s3
+      new aws_iam.PolicyStatement({
+        actions: ["s3:*"],
+        effect: Effect.ALLOW,
+        resources: [
+          props.athenaResultBucketArn,
+          `${props.athenaResultBucketArn}/*`,
+          props.sourceBucketArn,
+          `${props.sourceBucketArn}/*`,
+        ],
+      }),
+      // access glue catalog
+      new aws_iam.PolicyStatement({
+        actions: ["glue:*"],
+        effect: Effect.ALLOW,
+        resources: [
+          `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
+          `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
+          `arn:aws:glue:${this.region}:*:*catalog`,
+        ],
+      }),
+    ],
+  }
+);
 ```
 
 ```ts
@@ -534,6 +542,4 @@ policy.attachToUser(user);
 
 - [DDL Statement](https://docs.aws.amazon.com/athena/latest/ug/ddl-reference.html)
 
-```
-
-```
+- [AWSGlueServiceRoleDefault](https://docs.aws.amazon.com/glue/latest/dg/create-an-iam-role.html)
