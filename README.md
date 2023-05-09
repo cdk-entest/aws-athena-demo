@@ -329,6 +329,8 @@ const user = new aws_iam.User(this, `${props.userName}IAMUSER`, {
 });
 ```
 
+## Data Access via IAM
+
 Option 1. Grant the DS to access all data
 
 ```ts
@@ -448,6 +450,76 @@ const policy = new aws_iam.Policy(
 );
 ```
 
+## Create IAM Role for Glue
+
+- Create an IAM Role for Glue
+- Create a Glue Notebook or interactive session
+- Read data from Glue catalog, S3
+
+```ts
+const role = new aws_iam.Role(this, `GlueRoleFor-${props.pipelineName}`, {
+  roleName: `GlueRoleFor-${props.pipelineName}`,
+  assumedBy: new aws_iam.ServicePrincipal("glue.amazonaws.com"),
+});
+
+role.addManagedPolicy(
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
+    "service-role/AWSGlueServiceRole"
+  )
+);
+
+role.addManagedPolicy(
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy")
+);
+```
+
+Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gule role
+
+```ts
+    const policy = new aws_iam.Policy(
+      this,
+      "LeastPriviledgePolicyForDataScientist",
+      {
+        policyName: "LeastPriviledgePolicyForDataScientist",
+        statements: [
+          // athena
+          new aws_iam.PolicyStatement({
+            actions: ["athena:*"],
+            effect: Effect.ALLOW,
+            resources: ["*"],
+          }),
+          // access s3
+          new aws_iam.PolicyStatement({
+            actions: [
+              "s3:*"
+            ],
+            effect: Effect.ALLOW,
+            resources: [
+              props.athenaResultBucketArn,
+              `${props.athenaResultBucketArn}/*`,
+              props.sourceBucketArn,
+              `${props.sourceBucketArn}/*`,
+            ],
+          }),
+          // access glue catalog
+          new aws_iam.PolicyStatement({
+            actions: [
+              "glue:*",
+            ],
+            effect: Effect.ALLOW,
+            resources: [
+              `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
+              `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
+              `arn:aws:glue:${this.region}:*:*catalog`,
+            ],
+          }),
+      }
+```
+
+```ts
+policy.attachToUser(user);
+```
+
 ## Reference
 
 - [Athena Data Limit](https://docs.aws.amazon.com/athena/latest/ug/workgroups-setting-control-limits-cloudwatch.html)
@@ -461,3 +533,7 @@ const policy = new aws_iam.Policy(
 - [Athena SerDe](https://docs.aws.amazon.com/athena/latest/ug/lazy-simple-serde.html)
 
 - [DDL Statement](https://docs.aws.amazon.com/athena/latest/ug/ddl-reference.html)
+
+```
+
+```
