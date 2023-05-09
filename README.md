@@ -343,6 +343,42 @@ Option 2. Least priviledge so the DS only can access requested tables. For Glue,
 All operations performed on a Data Catalog resource require permission on the resource and all the ancestors of that resource. For example, to create a partition for a table requires permission on the table, database, and catalog where the table is located. The following example shows the permission required to create partitions on table PrivateTable in database PrivateDatabase in the Data Catalog.
 ```
 
+Specify the permission to access tables in Glue catalog
+
+```ts
+      new aws_iam.PolicyStatement({
+        actions: [
+          "glue:CreateDatabase",
+          "glue:DeleteDatabase",
+          "glue:GetDatabase",
+          "glue:GetDatabases",
+          "glue:UpdateDatabase",
+          "glue:CreateTable",
+          "glue:DeleteTable",
+          "glue:BatchDeleteTable",
+          "glue:UpdateTable",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:BatchCreatePartition",
+          "glue:CreatePartition",
+          "glue:DeletePartition",
+          "glue:BatchDeletePartition",
+          "glue:UpdatePartition",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+          "glue:BatchGetPartition",
+        ],
+        effect: Effect.ALLOW,
+        resources: [
+          `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
+          `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
+          `arn:aws:glue:${this.region}:*:*catalog`,
+        ],
+      }),
+```
+
+The full IAM policy attached to the DS IAM user
+
 ```ts
 const policy = new aws_iam.Policy(
   this,
