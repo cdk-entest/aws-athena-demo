@@ -575,4 +575,4 @@ policy.attachToUser(user);
 
 - [Glue notebook magics](https://docs.aws.amazon.com/glue/latest/dg/interactive-sessions-magics.html)
 
-- [Athena spark magics](https://docs.aws.amazon.com/athena/latest/ug/notebooks-spark-magics.html)
+- [Athena spark notebook magics](https://docs.aws.amazon.com/athena/latest/ug/notebooks-spark-magics.html)
