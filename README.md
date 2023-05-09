@@ -304,6 +304,114 @@ Useful vim command to insert comma to end of each column line name
 :%/s/$/,/g
 ```
 
+## Create an Data Scientist (IAM User)
+
+[Before Lake Formation released in 2019](https://aws.amazon.com/blogs/aws/aws-lake-formation-now-generally-available/), we need to configure data access via IAM Policy. For example, if there is Data Scientist (IAM user), to enable the DS to query tables in Glue Catalog, we need to configure
+
+- S3 IAM policy to grant access the underlying data
+- Glue IAM Policy to grant access database, table in Catalog
+
+Create an IAM user
+
+```ts
+const secret = new aws_secretsmanager.Secret(this, `${props.userName}Secret`, {
+  secretName: `${props.userName}Secret`,
+  generateSecretString: {
+    secretStringTemplate: JSON.stringify({ userName: props.userName }),
+    generateStringKey: "password",
+  },
+});
+
+const user = new aws_iam.User(this, `${props.userName}IAMUSER`, {
+  userName: props.userName,
+  password: secret.secretValueFromJson("password"),
+  passwordResetRequired: false,
+});
+```
+
+Option 1. Grant the DS to access all data
+
+```ts
+user.addManagedPolicy(
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonAthenaFullAccess")
+);
+```
+
+Option 2. Least priviledge so the DS only can access requested tables. For Glue, please [note that](https://docs.aws.amazon.com/glue/latest/dg/glue-specifying-resource-arns.html)
+
+```txt
+All operations performed on a Data Catalog resource require permission on the resource and all the ancestors of that resource. For example, to create a partition for a table requires permission on the table, database, and catalog where the table is located. The following example shows the permission required to create partitions on table PrivateTable in database PrivateDatabase in the Data Catalog.
+```
+
+```ts
+const policy = new aws_iam.Policy(
+  this,
+  "LeastPriviledgePolicyForDataScientist",
+  {
+    policyName: "LeastPriviledgePolicyForDataScientist",
+    statements: [
+      // athena
+      new aws_iam.PolicyStatement({
+        actions: ["athena:*"],
+        effect: Effect.ALLOW,
+        resources: ["*"],
+      }),
+      // access s3
+      new aws_iam.PolicyStatement({
+        actions: [
+          "s3:GetBucketLocation",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:ListBucketMultipartUploads",
+          "s3:ListMultipartUploadParts",
+          "s3:AbortMultipartUpload",
+          "s3:CreateBucket",
+          "s3:PutObject",
+          "s3:PutBucketPublicAccessBlock",
+        ],
+        effect: Effect.ALLOW,
+        resources: [
+          props.athenaResultBucketArn,
+          `${props.athenaResultBucketArn}/*`,
+          props.sourceBucketArn,
+          `${props.sourceBucketArn}/*`,
+        ],
+      }),
+      // access glue catalog
+      new aws_iam.PolicyStatement({
+        actions: [
+          "glue:CreateDatabase",
+          "glue:DeleteDatabase",
+          "glue:GetDatabase",
+          "glue:GetDatabases",
+          "glue:UpdateDatabase",
+          "glue:CreateTable",
+          "glue:DeleteTable",
+          "glue:BatchDeleteTable",
+          "glue:UpdateTable",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:BatchCreatePartition",
+          "glue:CreatePartition",
+          "glue:DeletePartition",
+          "glue:BatchDeletePartition",
+          "glue:UpdatePartition",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+          "glue:BatchGetPartition",
+        ],
+        effect: Effect.ALLOW,
+        resources: [
+          `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
+          `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
+          `arn:aws:glue:${this.region}:*:*catalog`,
+        ],
+      }),
+    ],
+  }
+);
+```
+
 ## Reference
 
 - [Athena Data Limit](https://docs.aws.amazon.com/athena/latest/ug/workgroups-setting-control-limits-cloudwatch.html)
