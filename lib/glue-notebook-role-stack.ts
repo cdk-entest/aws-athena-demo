@@ -33,10 +33,16 @@ export class GlueNotebookRoleStack extends Stack {
     //
     const policy = new aws_iam.Policy(
       this,
-      "LeastPriviledgePolicyForDataScientist",
+      "LeastPriviledgePolicyForGlueNotebookRole",
       {
-        policyName: "LeastPriviledgePolicyForDataScientist",
+        policyName: "LeastPriviledgePolicyForGlueNotebookRole",
         statements: [
+          // pass iam role
+          new aws_iam.PolicyStatement({
+            actions: ["iam:PassRole", "iam:GetRole"],
+            effect: Effect.ALLOW,
+            resources: ["*"],
+          }),
           // athena
           new aws_iam.PolicyStatement({
             actions: ["athena:*"],

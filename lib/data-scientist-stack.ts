@@ -5,6 +5,7 @@ import { Construct } from "constructs";
 interface DataScientistProps extends StackProps {
   userName: string;
   athenaResultBucketArn: string;
+  athenaWorkgroupName: string;
   sourceBucketArn: string;
   databaseName: string;
   databasePermissions: string[];
@@ -63,6 +64,22 @@ export class DataScientistStack extends Stack {
           // athena
           new aws_iam.PolicyStatement({
             actions: ["athena:*"],
+            effect: Effect.ALLOW,
+            // resources: ["*"],
+            resources: [
+              `arn:aws:athena:${this.region}:${this.account}:workgroup/${props.athenaWorkgroupName}`,
+            ],
+          }),
+          new aws_iam.PolicyStatement({
+            actions: [
+              "athena:ListEngineVersions",
+              "athena:ListWorkGroups",
+              "athena:ListDataCatalogs",
+              "athena:ListDatabases",
+              "athena:GetDatabase",
+              "athena:ListTableMetadata",
+              "athena:GetTableMetadata",
+            ],
             effect: Effect.ALLOW,
             resources: ["*"],
           }),

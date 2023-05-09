@@ -11,6 +11,7 @@ date: 2022-03-05
 [GitHub] this note shows
 
 - Create Athena workgroup for query
+- Control access to Athena workgroup via IAM
 - Create PySpark workgroup for interactive Spark
 - Create table by Glue Crawler then query with Athena
 - Create an external table from Athena editor
@@ -382,72 +383,93 @@ Specify the permission to access tables in Glue catalog
 The full IAM policy attached to the DS IAM user
 
 ```ts
-const policy = new aws_iam.Policy(
-  this,
-  "LeastPriviledgePolicyForDataScientist",
-  {
-    policyName: "LeastPriviledgePolicyForDataScientist",
-    statements: [
-      // athena
-      new aws_iam.PolicyStatement({
-        actions: ["athena:*"],
-        effect: Effect.ALLOW,
-        resources: ["*"],
-      }),
-      // access s3
-      new aws_iam.PolicyStatement({
-        actions: [
-          "s3:GetBucketLocation",
-          "s3:GetObject",
-          "s3:ListBucket",
-          "s3:ListBucketMultipartUploads",
-          "s3:ListMultipartUploadParts",
-          "s3:AbortMultipartUpload",
-          "s3:CreateBucket",
-          "s3:PutObject",
-          "s3:PutBucketPublicAccessBlock",
+    const policy = new aws_iam.Policy(
+      this,
+      "LeastPriviledgePolicyForDataScientist",
+      {
+        policyName: "LeastPriviledgePolicyForDataScientist",
+        statements: [
+          // athena
+          new aws_iam.PolicyStatement({
+            actions: ["athena:*"],
+            effect: Effect.ALLOW,
+            // resources: ["*"],
+            resources: [
+              `arn:aws:athena:${this.region}:${this.account}:workgroup/${props.athenaWorkgroupName}`,
+            ],
+          }),
+          new aws_iam.PolicyStatement({
+            actions: [
+              "athena:ListEngineVersions",
+              "athena:ListWorkGroups",
+              "athena:ListDataCatalogs",
+              "athena:ListDatabases",
+              "athena:GetDatabase",
+              "athena:ListTableMetadata",
+              "athena:GetTableMetadata",
+            ],
+            effect: Effect.ALLOW,
+            resources: ["*"],
+          }),
+          // access s3
+          new aws_iam.PolicyStatement({
+            actions: [
+              "s3:GetBucketLocation",
+              "s3:GetObject",
+              "s3:ListBucket",
+              "s3:ListBucketMultipartUploads",
+              "s3:ListMultipartUploadParts",
+              "s3:AbortMultipartUpload",
+              "s3:CreateBucket",
+              "s3:PutObject",
+              "s3:PutBucketPublicAccessBlock",
+            ],
+            effect: Effect.ALLOW,
+            resources: [
+              props.athenaResultBucketArn,
+              `${props.athenaResultBucketArn}/*`,
+              props.sourceBucketArn,
+              `${props.sourceBucketArn}/*`,
+            ],
+          }),
+          // access glue catalog
+          new aws_iam.PolicyStatement({
+            actions: [
+              "glue:CreateDatabase",
+              "glue:DeleteDatabase",
+              "glue:GetDatabase",
+              "glue:GetDatabases",
+              "glue:UpdateDatabase",
+              "glue:CreateTable",
+              "glue:DeleteTable",
+              "glue:BatchDeleteTable",
+              "glue:UpdateTable",
+              "glue:GetTable",
+              "glue:GetTables",
+              "glue:BatchCreatePartition",
+              "glue:CreatePartition",
+              "glue:DeletePartition",
+              "glue:BatchDeletePartition",
+              "glue:UpdatePartition",
+              "glue:GetPartition",
+              "glue:GetPartitions",
+              "glue:BatchGetPartition",
+            ],
+            effect: Effect.ALLOW,
+            resources: [
+              `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
+              `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
+              `arn:aws:glue:${this.region}:*:*catalog`,
+            ],
+          }),
+          // access lakeformation
+          // new aws_iam.PolicyStatement({
+          //   actions: ["lakeformation:GetDataAccess"],
+          //   effect: Effect.ALLOW,
+          //   resources: ["*"],
+          // }),
         ],
-        effect: Effect.ALLOW,
-        resources: [
-          props.athenaResultBucketArn,
-          `${props.athenaResultBucketArn}/*`,
-          props.sourceBucketArn,
-          `${props.sourceBucketArn}/*`,
-        ],
-      }),
-      // access glue catalog
-      new aws_iam.PolicyStatement({
-        actions: [
-          "glue:CreateDatabase",
-          "glue:DeleteDatabase",
-          "glue:GetDatabase",
-          "glue:GetDatabases",
-          "glue:UpdateDatabase",
-          "glue:CreateTable",
-          "glue:DeleteTable",
-          "glue:BatchDeleteTable",
-          "glue:UpdateTable",
-          "glue:GetTable",
-          "glue:GetTables",
-          "glue:BatchCreatePartition",
-          "glue:CreatePartition",
-          "glue:DeletePartition",
-          "glue:BatchDeletePartition",
-          "glue:UpdatePartition",
-          "glue:GetPartition",
-          "glue:GetPartitions",
-          "glue:BatchGetPartition",
-        ],
-        effect: Effect.ALLOW,
-        resources: [
-          `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
-          `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
-          `arn:aws:glue:${this.region}:*:*catalog`,
-        ],
-      }),
-    ],
-  }
-);
+      }
 ```
 
 ## Create IAM Role for Glue
@@ -543,3 +565,5 @@ policy.attachToUser(user);
 - [DDL Statement](https://docs.aws.amazon.com/athena/latest/ug/ddl-reference.html)
 
 - [AWSGlueServiceRoleDefault](https://docs.aws.amazon.com/glue/latest/dg/create-an-iam-role.html)
+
+- [Athena Workgroup policy](https://docs.aws.amazon.com/athena/latest/ug/example-policies-workgroup.html)

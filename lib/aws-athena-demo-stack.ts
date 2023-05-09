@@ -10,6 +10,8 @@ import * as path from "path";
 interface AthenaProps extends StackProps {
   destS3BucketName: string;
   sourceS3BucketName: string;
+  athenaWorkgroupName: string;
+  sparkWorkgroupName: string;
 }
 
 export enum AthenaAnalyticEngine {
@@ -20,9 +22,6 @@ export enum AthenaAnalyticEngine {
 export class AwsAthenaDemoStack extends Stack {
   constructor(scope: Construct, id: string, props: AthenaProps) {
     super(scope, id, props);
-
-    //
-    const sparkWorkGroupName: string = "SparkWorkGroup";
 
     // create s3 query result
     const bucket = new aws_s3.Bucket(this, "AthenaQueryResultBucket", {
@@ -59,7 +58,7 @@ export class AwsAthenaDemoStack extends Stack {
       new aws_iam.PolicyStatement({
         effect: Effect.ALLOW,
         resources: [
-          `arn:aws:athena:${this.region}:${this.account}:workgroup/${sparkWorkGroupName}`,
+          `arn:aws:athena:${this.region}:${this.account}:workgroup/${props.sparkWorkgroupName}`,
         ],
         actions: [
           "athena:GetWorkGroup",
@@ -82,7 +81,7 @@ export class AwsAthenaDemoStack extends Stack {
 
     // create athena sql workgroup
     const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
-      name: "WorkGroupDemo",
+      name: props.athenaWorkgroupName,
       description: "demo",
       // destroy stack can delete workgroup event not empy
       recursiveDeleteOption: true,
@@ -105,7 +104,7 @@ export class AwsAthenaDemoStack extends Stack {
 
     // create apache spark workgroup
     const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
-      name: sparkWorkGroupName,
+      name: props.sparkWorkgroupName,
       description: "spark",
       recursiveDeleteOption: true,
       state: "ENABLED",
@@ -137,7 +136,7 @@ export class AwsAthenaDemoStack extends Stack {
       ),
     });
 
-    // query to create amazon_reviews_tsv_table 
+    // query to create amazon_reviews_tsv_table
     new CfnNamedQuery(this, "AmazonReviewTsvTable", {
       name: "CreateAmazonReviewTsvTable",
       database: "default",
@@ -150,20 +149,23 @@ export class AwsAthenaDemoStack extends Stack {
       ),
     });
 
-    // create amazon_reviews_parquet_table  
+    // create amazon_reviews_parquet_table
     new CfnNamedQuery(this, "AmazonReviewParquetTable", {
       name: "CreateAmazonReviewParquettable",
       database: "default",
       workGroup: workgroup.ref,
       queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/create_amazon_review_parquet_table.sql"),
+        path.join(
+          __dirname,
+          "./../query/create_amazon_review_parquet_table.sql"
+        ),
         {
           encoding: "utf-8",
         }
       ),
     });
 
-     // msk fix partition of table 
+    // msk fix partition of table
     new CfnNamedQuery(this, "MSKRepairAmazonReviewParquetTable", {
       name: "FixAmazonReviewParquettable",
       database: "default",
@@ -176,7 +178,7 @@ export class AwsAthenaDemoStack extends Stack {
       ),
     });
 
-     // ctas create a new table  
+    // ctas create a new table
     new CfnNamedQuery(this, "CreateTableWithCTASEx1", {
       name: "CTASExample1",
       database: "default",
