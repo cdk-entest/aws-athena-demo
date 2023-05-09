@@ -402,6 +402,7 @@ The full IAM policy attached to the DS IAM user
             actions: [
               "athena:ListEngineVersions",
               "athena:ListWorkGroups",
+              "athena:GetWorkGroup",
               "athena:ListDataCatalogs",
               "athena:ListDatabases",
               "athena:GetDatabase",
@@ -567,3 +568,7 @@ policy.attachToUser(user);
 - [AWSGlueServiceRoleDefault](https://docs.aws.amazon.com/glue/latest/dg/create-an-iam-role.html)
 
 - [Athena Workgroup policy](https://docs.aws.amazon.com/athena/latest/ug/example-policies-workgroup.html)
+
+- [Glue Worker Type](https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
+
+- [Glue Pricing](https://aws.amazon.com/glue/pricing/)
