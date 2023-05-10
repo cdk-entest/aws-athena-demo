@@ -3,6 +3,7 @@ import * as cdk from "aws-cdk-lib";
 import { AwsAthenaDemoStack } from "../lib/aws-athena-demo-stack";
 import { config } from "../config";
 import { DataScientistStack } from "../lib/data-scientist-stack";
+import { GlueNotebookRoleStack } from "../lib/glue-notebook-role-stack";
 
 const app = new cdk.App();
 
@@ -26,4 +27,11 @@ new DataScientistStack(app, "DataScientistStack", {
   sourceBucketArn: `arn:aws:s3:::${config.sourceS3BucketName}`,
   databaseName: "default",
   databasePermissions: [],
+});
+
+// create role for Glue notebook
+new GlueNotebookRoleStack(app, "GlueNotebookRoleStack", {
+  athenaResultBucketArn: `arn:aws:s3:::${config.destS3BucketName}`,
+  sourceBucketArn: `arn:aws:s3:::${config.sourceS3BucketName}`,
+  databaseName: "default",
 });
