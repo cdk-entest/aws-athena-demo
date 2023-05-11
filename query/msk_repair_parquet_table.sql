@@ -1,1 +1,1 @@
-msck repair table mytable;
+msck repair table amazon_reviews_parquet;

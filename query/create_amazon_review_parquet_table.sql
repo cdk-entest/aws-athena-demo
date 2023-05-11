@@ -20,4 +20,4 @@ stored as inputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFo
 outputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 location "s3://amazon-reviews-pds/parquet/"
 tblproperties ("classification"="parquet")
--- msck repair table mytable; 
+-- msck repair table amazon_reviews_parquet; 
