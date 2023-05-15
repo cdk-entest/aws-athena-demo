@@ -1,5 +1,5 @@
 ---
-title: getting started with athena
+title: athena introduction
 description: getting started with athena
 author: haimtran
 publishedDate: 03/05/2022
@@ -8,7 +8,7 @@ date: 2022-03-05
 
 ## Introduction
 
-[GitHub] this note shows
+[GitHub](https://github.com/cdk-entest/aws-athena-demo) this note shows
 
 - Create Athena Query, Spark workgroups
 - Control access to Athena workgroup via IAM
@@ -87,7 +87,12 @@ const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
 
 ## Create Table - Parquet Data
 
-- Example 1: amazon-reviews-pds dataset (parquet with partitions)
+- Example 1: amazon-reviews-pds dataset (parquet with partitions), check the data size
+
+```bash
+aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
+aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
+```
 
 Use the s3://amazon-reviews-pds/parquet to create a table and then query
 
@@ -136,7 +141,13 @@ select marketplace, customer_id, review_id, star_rating, review_body from mytabl
 
 ## Create Table - CSV Data
 
-As the amazon-reviews-pds tsv prefix container some noisy files such as index.txt, you need to exclude it while creating a new table in Athena. I work around this by copy tsv.gz data to my own S3 bucket first.
+As the amazon-reviews-pds tsv prefix container some noisy files such as index.txt, you need to exclude it while creating a new table in Athena. I work around this by copy tsv.gz data to my own S3 bucket first. Check the data size
+
+```bash
+aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
+aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
+
+```
 
 ```bash
 aws s3 cp s3://amazon-reviews-pds/tsv/ s3://my-bucket/tsv/ --exclude '*' --include '*.tsv.gz' --recursive
@@ -208,42 +219,7 @@ You might need to update partition and metadata using MSCK
 msck repair table mytable;
 ```
 
-## Parquet versus TSV
-
-Create the same query with two tables to see performance and cost. First, for the tsv table
-
-```sql
-select customer_id, sum(star_rating) as sum_rating
-from amazon_reviews_tsv
-group by customer_id
-order by sum_rating desc;
-```
-
-and for parquet table
-
-```sql
-select customer_id, sum(star_rating) as sum_rating
-from amazon_reviews_parquet
-group by customer_id
-order by sum_rating desc;
-```
-
-- tsv: scanned 32.22 GB and runtime 97 seconds
-- parquet: scanned 1.21 GB and runtime 38 seconds
-- check time in queue
-
-## Create Table from Glue Crawler
-
-- Example 1: amazon-review-pds/parquet
-- Example 2: amazon-review-pds/tsv
-
-It is quite straightfoward to create table using Glue Crawler
-
-- Create an IAM role for Glue Crawler
-- Create a Glue Crawler and specify the data source in S3
-- After the crawler complete, you can query the table from Athena
-
-## Create Table Using CTAS
+## Create Table - CTAS
 
 - CTAS means CREATE TABLE AS SELECT
 - Create a new table, parquet format from result of a query, same location
@@ -277,35 +253,42 @@ FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = 'data_table'
 ```
 
-## Troubleshooting
+## Create Table - Crawler
 
-- check s3 bucket size
-- data with null value
-- delimeter comman or tab
-- format such as parquet, csv
+- Example 1: amazon-review-pds/parquet
+- Example 2: amazon-review-pds/tsv
 
-some slow queries
+It is quite straightfoward to create table using Glue Crawler
+
+- Create an IAM role for Glue Crawler
+- Create a Glue Crawler and specify the data source in S3
+- After the crawler complete, you can query the table from Athena
+
+## Parquet versus TSV
+
+Create the same query with two tables to see performance and cost. First, for the tsv table
 
 ```sql
-select customer_id, product_id, sum(star_rating) as sum_rating from parquet
-group by customer_id, product_id
+select customer_id, sum(star_rating) as sum_rating
+from amazon_reviews_tsv
+group by customer_id
 order by sum_rating desc;
 ```
 
-Check s3 data size
+and for parquet table
 
-```bash
-aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
-aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
+```sql
+select customer_id, sum(star_rating) as sum_rating
+from amazon_reviews_parquet
+group by customer_id
+order by sum_rating desc;
 ```
 
-Useful vim command to insert comma to end of each column line name
+- tsv: scanned 32.22 GB and runtime 97 seconds
+- parquet: scanned 1.21 GB and runtime 38 seconds
+- check time in queue
 
-```bash
-:%/s/$/,/g
-```
-
-## Create an Data Scientist (IAM User)
+## Data Scientist
 
 [Before Lake Formation released in 2019](https://aws.amazon.com/blogs/aws/aws-lake-formation-now-generally-available/), we need to configure data access via IAM Policy. For example, if there is Data Scientist (IAM user), to enable the DS to query tables in Glue Catalog, we need to configure
 
@@ -473,7 +456,7 @@ The full IAM policy attached to the DS IAM user
       }
 ```
 
-## Create IAM Role for Glue
+## IAM Role for Glue
 
 - Create an IAM Role for Glue
 - Create a Glue Notebook or interactive session
@@ -555,6 +538,34 @@ policy.attachToUser(user);
 
 - [Athena notebook](https://github.com/cdk-entest/aws-athena-demo/blob/master/notebook/athena_notebook.ipynb)
 - [Glue notebook](https://github.com/cdk-entest/aws-athena-demo/blob/master/notebook/glue_notebook_full.ipynb)
+
+## Troubleshooting
+
+- check s3 bucket size
+- data with null value
+- delimeter comman or tab
+- format such as parquet, csv
+
+some slow queries
+
+```sql
+select customer_id, product_id, sum(star_rating) as sum_rating from parquet
+group by customer_id, product_id
+order by sum_rating desc;
+```
+
+Check s3 data size
+
+```bash
+aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
+aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
+```
+
+Useful vim command to insert comma to end of each column line name
+
+```bash
+:%/s/$/,/g
+```
 
 ## Reference
 
