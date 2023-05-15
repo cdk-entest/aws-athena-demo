@@ -119,7 +119,7 @@ tblproperties ("classification"="parquet")
 We might need to update partitions by using MSCK
 
 ```sql
-msck repair table mytable;
+msck repair table amazon_reviews_parquet_table;
 ```
 
 Or use the ALTER sql
