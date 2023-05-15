@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS ctas_parquet_same_location(
     format='parquet',
     partitioned_by = ARRAY['marketplace']
 ) AS
-SELECT customer_id, product_id, star_rating, marketplace from amazon_reviews_tsv;
+SELECT customer_id, product_id, star_rating, marketplace from amazon_reviews_tsv_table;
 ```
 
 Second, create the new table in an external location
@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS ctas WITH (
 	format = 'PARQUET',
 	external_location = 's3://athena-query-result-entest/new-data-parquet/'
 ) AS
-SELECT customer_id, product_id, star_rating FROM parquet
+SELECT customer_id, product_id, star_rating FROM amazon_reviews_parquet_table
 ```
 
 print columns
@@ -250,7 +250,7 @@ print columns
 ```sql
 SELECT *
 FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'data_table'
+WHERE TABLE_NAME = 'amazon_reviews_parquet_table'
 ```
 
 ## Create Table - Crawler
