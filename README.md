@@ -156,7 +156,7 @@ aws s3 cp s3://amazon-reviews-pds/tsv/ s3://my-bucket/tsv/ --exclude '*' --inclu
 Use the same amazon-reviews-pds but source the tsv data.
 
 ```sql
-create external table tsv (
+create external table amazon_reviews_tsv_table (
  marketplace string,
  customer_id string,
  review_id string,
