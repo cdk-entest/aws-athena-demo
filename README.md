@@ -10,11 +10,11 @@ date: 2022-03-05
 
 [GitHub] this note shows
 
-- Create Athena workgroup for query
+- Create Athena Query, Spark workgroups
 - Control access to Athena workgroup via IAM
-- Create PySpark workgroup for interactive Spark
-- Create table by Glue Crawler then query with Athena
 - Create an external table from Athena editor
+- Create table by Glue Crawler then query with Athena
+- Play with a Athena Spark notebook
 
 It is noted that
 
@@ -550,6 +550,11 @@ const policy = new aws_iam.Policy(
 ```ts
 policy.attachToUser(user);
 ```
+
+## Athena Spark Notebook
+
+- [Athena notebook](https://github.com/cdk-entest/aws-athena-demo/blob/master/notebook/athena_notebook.ipynb)
+- [Glue notebook](https://github.com/cdk-entest/aws-athena-demo/blob/master/notebook/glue_notebook_full.ipynb)
 
 ## Reference
 
