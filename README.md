@@ -567,6 +567,14 @@ Useful vim command to insert comma to end of each column line name
 :%/s/$/,/g
 ```
 
+Because the tsv data folder has noisy files, to avoid wierd result, hot fix by this kind of query
+
+```sql
+select * from amazon_reviews_tsv_table
+where marketplace like 'US'
+limit 100;
+```
+
 ## Reference
 
 - [Athena Data Limit](https://docs.aws.amazon.com/athena/latest/ug/workgroups-setting-control-limits-cloudwatch.html)
