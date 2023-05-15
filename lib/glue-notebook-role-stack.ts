@@ -66,14 +66,22 @@ export class GlueNotebookRoleStack extends Stack {
             effect: Effect.ALLOW,
             resources: [
               `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
-              `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
-              `arn:aws:glue:${this.region}:*:*catalog`,
+              `arn:aws:glue:${this.region}:*:database/${props.databaseName}`,
+              `arn:aws:glue:${this.region}:*:catalog`,
             ],
+          }),
+          // lakeformation
+          new aws_iam.PolicyStatement({
+            actions: [
+              "lakeforamtion:GetDataAccess",
+              "lakeforamtion:GrantPermissions",
+            ],
+            resources: ["*"],
+            effect: Effect.ALLOW,
           }),
         ],
       }
     );
-
     policy.attachToRole(role);
   }
 }
