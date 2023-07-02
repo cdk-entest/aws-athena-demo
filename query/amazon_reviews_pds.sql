@@ -13,14 +13,14 @@ create external table amazon_reviews_parquet_table (
 	verified_purchase string,
 	review_headline string,
 	review_body string,
-	review_date string,
+	review_date date,
 	`year` int
 )
 partitioned by (product_category string)
 row format serde 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 stored as inputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 location "s3://amazon-reviews-pds/parquet/"
-tblproperties ("classification" = "parquet");
+tblproperties ("classification" = "parquet")
 
 -- msck repair table amazon_reviews_parquet
 msck repair table amazon_reviews_parquet_table;

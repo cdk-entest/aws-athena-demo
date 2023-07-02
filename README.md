@@ -116,7 +116,7 @@ create external table amazon_reviews_parquet_table (
 	verified_purchase string,
 	review_headline string,
 	review_body string,
-	review_date string,
+	review_date date,
 	`year` int
 )
 partitioned by (product_category string)
@@ -282,24 +282,32 @@ It is quite straightfoward to create table using Glue Crawler
 Create the same query with two tables to see performance and cost. First, for the tsv table
 
 ```sql
-select customer_id, sum(star_rating) as sum_rating
-from amazon_reviews_tsv_table
-group by customer_id
-order by sum_rating desc;
+select "customer_id",
+	sum("star_rating") as sum_rating
+from "amazon_reviews_csv_table"
+group by "customer_id"
+order by sum_rating desc
 ```
 
 and for parquet table
 
 ```sql
-select customer_id, sum(star_rating) as sum_rating
-from amazon_reviews_parquet_table
-group by customer_id
-order by sum_rating desc;
+select "customer_id",
+	sum("star_rating") as sum_rating
+from "amazon_reviews_parquet_table"
+group by "customer_id"
+order by sum_rating desc
 ```
 
 - tsv: scanned 32.22 GB and runtime 97 seconds
 - parquet: scanned 1.21 GB and runtime 38 seconds
 - check time in queue
+
+Compare the count row 
+
+```sql 
+select count(*) as num_row from "amazon_reviews_parquet_table"
+```
 
 ## Data Scientist
 
