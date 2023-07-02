@@ -228,21 +228,30 @@ msck repair table mytable;
 First, create a new table in the same location bucket. The partition key should placed at the last.
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctas_parquet_same_location(
-    format='parquet',
-    partitioned_by = ARRAY['marketplace']
-) AS
-SELECT customer_id, product_id, star_rating, marketplace from amazon_reviews_tsv_table;
+create table if not exists ctas_table with (format = 'parquet') as
+select "marketplace",
+	"customer_id",
+	"review_id",
+	"product_id",
+	"product_title",
+	"star_rating"
+from "amazon_reviews_tsv_table"
 ```
 
 Second, create the new table in an external location
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctas WITH (
-	format = 'PARQUET',
-	external_location = 's3://athena-query-result-entest/new-data-parquet/'
-) AS
-SELECT customer_id, product_id, star_rating FROM amazon_reviews_parquet_table
+create table if not exists ctas_table_partitioned with (
+	format = 'parquet',
+	partitioned_by = array [ 'marketplace' ]
+) as
+select "customer_id",
+	"review_id",
+	"product_id",
+	"product_title",
+	"star_rating",
+	"marketplace"
+from "amazon_reviews_tsv_table"
 ```
 
 print columns
