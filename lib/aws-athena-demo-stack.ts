@@ -123,7 +123,7 @@ export class AwsAthenaDemoStack extends Stack {
       },
     });
 
-    // saved queries
+    // query on gdelt dataset  
     new CfnNamedQuery(this, "CreateGdeltTable", {
       name: "CreateGdeltTable",
       database: "default",
@@ -136,20 +136,7 @@ export class AwsAthenaDemoStack extends Stack {
       ),
     });
 
-    // query to create amazon_reviews_tsv_table
-    new CfnNamedQuery(this, "AmazonReviewTsvTable", {
-      name: "CreateAmazonReviewTsvTable",
-      database: "default",
-      workGroup: workgroup.ref,
-      queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/create_amazon_review_tsv_table.sql"),
-        {
-          encoding: "utf-8",
-        }
-      ),
-    });
-
-    // create amazon_reviews_parquet_table
+    // query on amazon-reviews-pds dataset  
     new CfnNamedQuery(this, "AmazonReviewParquetTable", {
       name: "CreateAmazonReviewParquettable",
       database: "default",
@@ -157,34 +144,8 @@ export class AwsAthenaDemoStack extends Stack {
       queryString: fs.readFileSync(
         path.join(
           __dirname,
-          "./../query/create_amazon_review_parquet_table.sql"
+          "./../query/amazon_reviews_pds.sql"
         ),
-        {
-          encoding: "utf-8",
-        }
-      ),
-    });
-
-    // msk fix partition of table
-    new CfnNamedQuery(this, "MSKRepairAmazonReviewParquetTable", {
-      name: "FixAmazonReviewParquettable",
-      database: "default",
-      workGroup: workgroup.ref,
-      queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/msk_repair_parquet_table.sql"),
-        {
-          encoding: "utf-8",
-        }
-      ),
-    });
-
-    // ctas create a new table
-    new CfnNamedQuery(this, "CreateTableWithCTASEx1", {
-      name: "CTASExample1",
-      database: "default",
-      workGroup: workgroup.ref,
-      queryString: fs.readFileSync(
-        path.join(__dirname, "./../query/ctas_example_1.sql"),
         {
           encoding: "utf-8",
         }
