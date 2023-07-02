@@ -51,8 +51,8 @@ tblproperties (
 	"skip.header.line.count" = "1"
 );
 
--- create table and convert from csv to parquet 
-create table if not exists ctas_table with (format = 'parquet') as
+-- create table and convert from csv to parquet - take 5 minutes 
+create table if not exists ctas_tsv_to_parquet_table with (format = 'parquet') as
 select "marketplace",
 	"customer_id",
 	"review_id",
@@ -61,8 +61,8 @@ select "marketplace",
 	"star_rating"
 from "amazon_reviews_tsv_table";
 
--- ctas create table in the athena result bucket with partitioned
-create table if not exists ctas_table_partitioned with (
+-- create table and convert from csv to parquet - take 5 minutes 
+create table if not exists ctas_tsv_to_parquet_partitioned_table with (
 	format = 'parquet',
 	partitioned_by = array [ 'marketplace' ]
 ) as
@@ -72,7 +72,8 @@ select "customer_id",
 	"product_title",
 	"star_rating",
 	"marketplace"
-from "amazon_reviews_tsv_table";
+from "amazon_reviews_tsv_table"
+where marketplace in ('US', 'JP')
 
 -- show columsn and scheuma of a table 
 select *
@@ -90,6 +91,43 @@ from "amazon_reviews_parquet_table"
 group by "customer_id"
 order by sum_rating desc;
 
+-- ctas create table in the athena result bucket with partitioned
+create table if not exists ctas_table_partitioned with (
+	format = 'parquet',
+	partitioned_by = array [ 'marketplace' ]
+) as
+select "customer_id",
+	"review_id",
+	"product_id",
+	"product_title",
+	"star_rating",
+	"marketplace"
+from "amazon_reviews_parquet_table"
+where marketplace in ('US', 'JP')
+
+-- check output 
+select count(*) from "ctas_table_partitioned"
+
+-- insert from select 
+insert into "ctas_table_partitioned"
+select "customer_id",
+	"review_id",
+	"product_id",
+	"product_title",
+	"star_rating",
+	"marketplace"
+from "amazon_reviews_parquet_table"
+where marketplace in ('FR')
+
+-- check output 
+select *
+from "ctas_table_partitioned"
+where marketplace = 'FR'
+
+-- check output 
+select distinct "marketplace"
+from "ctas_table_partitioned"
+
 -- insert values 
 insert into "ctas_table"
 values(
@@ -100,7 +138,7 @@ values(
 		'TCB',
 		5
 	);
-	
+
 -- check output of insert 
 select "marketplace",
 	"customer_id"
