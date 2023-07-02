@@ -103,30 +103,30 @@ Use the s3://amazon-reviews-pds/parquet to create a table and then query
 
 ```sql
 create external table amazon_reviews_parquet_table (
- marketplace string,
- customer_id string,
- review_id string,
- product_id string,
- product_parent string,
- product_title string,
- star_rating int,
- helpful_votes int,
- total_votes int,
- vine string,
- verified_purchase string,
- review_headline string,
- review_body string,
- review_date string,
- `year` int)
+	marketplace string,
+	customer_id string,
+	review_id string,
+	product_id string,
+	product_parent string,
+	product_title string,
+	star_rating int,
+	helpful_votes int,
+	total_votes int,
+	vine string,
+	verified_purchase string,
+	review_headline string,
+	review_body string,
+	review_date string,
+	`year` int
+)
 partitioned by (product_category string)
 row format serde 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-stored as inputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-outputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+stored as inputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
 location "s3://amazon-reviews-pds/parquet/"
-tblproperties ("classification"="parquet")
+tblproperties ("classification" = "parquet")
 ```
 
-We might need to update partitions by using MSCK
+We have to update partitions by using MSCK
 
 ```sql
 msck repair table amazon_reviews_parquet_table;
@@ -161,29 +161,29 @@ Use the same amazon-reviews-pds but source the tsv data.
 
 ```sql
 create external table amazon_reviews_tsv_table (
- marketplace string,
- customer_id string,
- review_id string,
- product_id string,
- product_parent string,
- product_title string,
- star_rating int,
- helpful_votes int,
- total_votes int,
- vine string,
- verified_purchase string,
- review_headline string,
- review_body string,
- review_date string,
- `year` int)
- ROW FORMAT DELIMITED
- FIELDS TERMINATED BY '\t'
- ESCAPED BY '\\'
- LINES TERMINATED BY '\n'
- stored as inputformat 'org.apache.hadoop.mapred.TextInputFormat'
- outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
- location "s3://my-bucket/tsv/"
- tblproperties ("classification"="csv", "skip.header.line.count"="1")
+	marketplace string,
+	customer_id string,
+	review_id string,
+	product_id string,
+	product_parent string,
+	product_title string,
+	star_rating int,
+	helpful_votes int,
+	total_votes int,
+	vine string,
+	verified_purchase string,
+	review_headline string,
+	review_body string,
+	review_date string,
+	`year` int
+)
+row format delimited fields terminated by '\t' escaped by '\\' lines terminated by '\n'
+stored as inputformat 'org.apache.hadoop.mapred.TextInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+location "s3://amazon-reviews-pds/tsv/"
+tblproperties (
+	"classification" = "csv",
+	"skip.header.line.count" = "1"
+)
 ```
 
 Or specifing serde and SERDEPROPERTIES as below
