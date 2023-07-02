@@ -1,4 +1,4 @@
----
+--- 
 title: athena introduction
 description: getting started with athena
 author: haimtran
@@ -225,27 +225,28 @@ msck repair table mytable;
 
 ## Create Table - CTAS
 
+- Convert data from tsv to parquet 
 - CTAS means CREATE TABLE AS SELECT
 - Create a new table, parquet format from result of a query, same location
 - Create a new table, parquet format from result of a query, external location
 
-First, create a new table in the same location bucket. The partition key should placed at the last.
+First, create a new table in the same location bucket. The partition key should placed at the last. This takes about 5 minutes 
 
 ```sql
-create table if not exists ctas_table with (format = 'parquet') as
+create table if not exists ctas_tsv_to_parquet_table with (format = 'parquet') as
 select "marketplace",
 	"customer_id",
 	"review_id",
 	"product_id",
 	"product_title",
 	"star_rating"
-from "amazon_reviews_tsv_table"
+from "amazon_reviews_tsv_table";
 ```
 
-Second, create the new table in an external location
+Second, create the new table in an external location. This takes about 5 minutes 
 
 ```sql
-create table if not exists ctas_table_partitioned with (
+create table if not exists ctas_tsv_to_parquet_partitioned_table with (
 	format = 'parquet',
 	partitioned_by = array [ 'marketplace' ]
 ) as
@@ -256,6 +257,7 @@ select "customer_id",
 	"star_rating",
 	"marketplace"
 from "amazon_reviews_tsv_table"
+where marketplace in ('US', 'JP')
 ```
 
 print columns
@@ -264,6 +266,79 @@ print columns
 select *
 from information_schema.columns
 where table_name = 'amazon_reviews_parquet_table'
+```
+
+## Insert Table 
+
+- Insert select 
+- Insert values 
+
+First create a table using ctas from parquet table 
+
+```sql 
+create table if not exists ctas_table_partitioned with (
+	format = 'parquet',
+	partitioned_by = array [ 'marketplace' ]
+) as
+select "customer_id",
+	"review_id",
+	"product_id",
+	"product_title",
+	"star_rating",
+	"marketplace"
+from "amazon_reviews_parquet_table"
+where marketplace in ('US', 'JP')
+```
+
+Check the current output 
+
+```sql 
+select count(*) from "ctas_table_partitioned"
+```
+
+Then insert data into the ctas_table by selecting from the parquet table 
+
+```sql 
+insert into "ctas_table_partitioned"
+select "customer_id",
+	"review_id",
+	"product_id",
+	"product_title",
+	"star_rating",
+	"marketplace"
+from "amazon_reviews_parquet_table"
+where marketplace in ('FR')
+```
+
+Check the output after inserting 
+
+```sql 
+select *
+from "ctas_table_partitioned"
+where marketplace = 'FR'
+```
+
+Let insert values into ctas_table 
+
+```sql 
+insert into "ctas_table"
+values(
+		'VN',
+		'12345678',
+		'12345678',
+		'12345678',
+		'TCB',
+		5
+	);
+```
+
+Let check the output 
+
+```sql 
+select "marketplace",
+	"customer_id"
+from "ctas_table"
+where marketplace = 'VN';
 ```
 
 ## Create Table - Crawler
