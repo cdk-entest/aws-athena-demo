@@ -11,7 +11,7 @@ date: 2022-03-05
 [GitHub](https://github.com/cdk-entest/aws-athena-demo) this note shows
 
 - Create Athena Query, Spark workgroups
-- Control access to Athena workgroup via IAM
+- Control access to Athena workgroup via IAM [here](https://docs.aws.amazon.com/athena/latest/ug/workgroups-iam-policy.html)
 - Create an external table from Athena editor
 - Create table by Glue Crawler then query with Athena
 - Play with a Athena Spark notebook
@@ -24,70 +24,75 @@ It is noted that
 - Queries can be saved and load
 - Notebook and be exported and imported
 
+<LinkedImage
+  alt="athena_serverless_etl"
+  src="/thumbnail/athena_serverless_etl.png"
+/>
+
 ## Athena WorkGroup
 
 Enum to select Athena query or PySpark
 
 ```ts
 export enum AthenaAnalyticEngine {
-  PySpark = "PySpark engine version 3",
-  Athena = "Athena engine version 3",
+  PySpark = 'PySpark engine version 3',
+  Athena = 'Athena engine version 3'
 }
 ```
 
 Create an Athena workgroup for SQL query
 
 ```ts
-const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
-  name: "WorkGroupDemo",
-  description: "demo",
+const workgroup = new CfnWorkGroup(this, 'WorkGroupDemo', {
+  name: 'WorkGroupDemo',
+  description: 'demo',
   // destroy stack can delete workgroup event not empy
   recursiveDeleteOption: true,
-  state: "ENABLED",
+  state: 'ENABLED',
   workGroupConfiguration: {
     bytesScannedCutoffPerQuery: 107374182400,
     engineVersion: {
       // pyspark not support in cloudformation
       // available in some regions at this moment
-      selectedEngineVersion: AthenaAnalyticEngine.Athena,
+      selectedEngineVersion: AthenaAnalyticEngine.Athena
     },
     requesterPaysEnabled: true,
     publishCloudWatchMetricsEnabled: true,
     resultConfiguration: {
       // encryption default
-      outputLocation: `s3://${props.destS3BucketName}/`,
-    },
-  },
-});
+      outputLocation: `s3://${props.destS3BucketName}/`
+    }
+  }
+})
 ```
 
 Create an Athena workgroup with PySpark
 
 ```ts
-const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
+const sparkWorkGroup = new CfnWorkGroup(this, 'SparkWorkGroup', {
   name: sparkWorkGroupName,
-  description: "spark",
+  description: 'spark',
   recursiveDeleteOption: true,
-  state: "ENABLED",
+  state: 'ENABLED',
   workGroupConfiguration: {
     executionRole: role.roleArn,
     bytesScannedCutoffPerQuery: 107374182400,
     engineVersion: {
       // effectiveEngineVersion: "",
-      selectedEngineVersion: AthenaAnalyticEngine.PySpark,
+      selectedEngineVersion: AthenaAnalyticEngine.PySpark
     },
     requesterPaysEnabled: true,
     publishCloudWatchMetricsEnabled: false,
     resultConfiguration: {
-      outputLocation: `s3://${props.destS3BucketName}/`,
-    },
-  },
-});
+      outputLocation: `s3://${props.destS3BucketName}/`
+    }
+  }
+})
 ```
 
 ## Create Table - Parquet Data
 
-- Example 1: amazon-reviews-pds dataset (parquet with partitions), check the data size
+- Example 1: amazon-reviews-pds dataset (parquet with partitions), check data size
 
 ```bash
 aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
@@ -141,12 +146,11 @@ select marketplace, customer_id, review_id, star_rating, review_body from mytabl
 
 ## Create Table - CSV Data
 
-As the amazon-reviews-pds tsv prefix container some noisy files such as index.txt, you need to exclude it while creating a new table in Athena. I work around this by copy tsv.gz data to my own S3 bucket first. Check the data size
+As the amazon-reviews-pds tsv prefix container some noisy files such as index.txt, you need to exclude it while creating a new table in Athena. I work around this by copy tsv.gz data to my own S3 bucket first. Check data size
 
 ```bash
 aws s3 ls --summarize --human-readable --recursive s3://amazon-reviews-pds/parquet/
 aws s3 ls --summarize --human-readable --recursive s3://gdelt-open-data/events/
-
 ```
 
 ```bash
@@ -257,9 +261,9 @@ from "amazon_reviews_tsv_table"
 print columns
 
 ```sql
-SELECT *
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'amazon_reviews_parquet_table'
+select *
+from information_schema.columns
+where table_name = 'amazon_reviews_parquet_table'
 ```
 
 ## Create Table - Crawler
@@ -279,7 +283,7 @@ Create the same query with two tables to see performance and cost. First, for th
 
 ```sql
 select customer_id, sum(star_rating) as sum_rating
-from amazon_reviews_tsv
+from amazon_reviews_tsv_table
 group by customer_id
 order by sum_rating desc;
 ```
@@ -288,7 +292,7 @@ and for parquet table
 
 ```sql
 select customer_id, sum(star_rating) as sum_rating
-from amazon_reviews_parquet
+from amazon_reviews_parquet_table
 group by customer_id
 order by sum_rating desc;
 ```
@@ -311,15 +315,15 @@ const secret = new aws_secretsmanager.Secret(this, `${props.userName}Secret`, {
   secretName: `${props.userName}Secret`,
   generateSecretString: {
     secretStringTemplate: JSON.stringify({ userName: props.userName }),
-    generateStringKey: "password",
-  },
-});
+    generateStringKey: 'password'
+  }
+})
 
 const user = new aws_iam.User(this, `${props.userName}IAMUSER`, {
   userName: props.userName,
-  password: secret.secretValueFromJson("password"),
-  passwordResetRequired: false,
-});
+  password: secret.secretValueFromJson('password'),
+  passwordResetRequired: false
+})
 ```
 
 ## Data Access via IAM
@@ -328,8 +332,8 @@ Option 1. Grant the DS to access all data
 
 ```ts
 user.addManagedPolicy(
-  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonAthenaFullAccess")
-);
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonAthenaFullAccess')
+)
 ```
 
 Option 2. Least priviledge so the DS only can access requested tables. For Glue, please [note that](https://docs.aws.amazon.com/glue/latest/dg/glue-specifying-resource-arns.html)
@@ -475,18 +479,18 @@ The full IAM policy attached to the DS IAM user
 ```ts
 const role = new aws_iam.Role(this, `GlueRoleFor-${props.pipelineName}`, {
   roleName: `GlueRoleFor-${props.pipelineName}`,
-  assumedBy: new aws_iam.ServicePrincipal("glue.amazonaws.com"),
-});
+  assumedBy: new aws_iam.ServicePrincipal('glue.amazonaws.com')
+})
 
 role.addManagedPolicy(
   aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
-    "service-role/AWSGlueServiceRole"
+    'service-role/AWSGlueServiceRole'
   )
-);
+)
 
 role.addManagedPolicy(
-  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy")
-);
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy')
+)
 ```
 
 Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gule role. The notebook need to pass role to the execution session, so there are to options
@@ -497,50 +501,50 @@ Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gu
 ```ts
 const policy = new aws_iam.Policy(
   this,
-  "LeastPriviledgePolicyForGlueNotebookRole",
+  'LeastPriviledgePolicyForGlueNotebookRole',
   {
-    policyName: "LeastPriviledgePolicyForGlueNotebookRole",
+    policyName: 'LeastPriviledgePolicyForGlueNotebookRole',
     statements: [
       // pass iam role
       new aws_iam.PolicyStatement({
-        actions: ["iam:PassRole", "iam:GetRole"],
+        actions: ['iam:PassRole', 'iam:GetRole'],
         effect: Effect.ALLOW,
-        resources: ["*"],
+        resources: ['*']
       }),
       // athena
       new aws_iam.PolicyStatement({
-        actions: ["athena:*"],
+        actions: ['athena:*'],
         effect: Effect.ALLOW,
-        resources: ["*"],
+        resources: ['*']
       }),
       // access s3
       new aws_iam.PolicyStatement({
-        actions: ["s3:*"],
+        actions: ['s3:*'],
         effect: Effect.ALLOW,
         resources: [
           props.athenaResultBucketArn,
           `${props.athenaResultBucketArn}/*`,
           props.sourceBucketArn,
-          `${props.sourceBucketArn}/*`,
-        ],
+          `${props.sourceBucketArn}/*`
+        ]
       }),
       // access glue catalog
       new aws_iam.PolicyStatement({
-        actions: ["glue:*"],
+        actions: ['glue:*'],
         effect: Effect.ALLOW,
         resources: [
           `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
           `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
-          `arn:aws:glue:${this.region}:*:*catalog`,
-        ],
-      }),
-    ],
+          `arn:aws:glue:${this.region}:*:*catalog`
+        ]
+      })
+    ]
   }
-);
+)
 ```
 
 ```ts
-policy.attachToUser(user);
+policy.attachToUser(user)
 ```
 
 ## Athena Spark Notebook
@@ -576,14 +580,6 @@ Useful vim command to insert comma to end of each column line name
 :%/s/$/,/g
 ```
 
-Because the tsv data folder has noisy files, to avoid wierd result, hot fix by this kind of query
-
-```sql
-select * from amazon_reviews_tsv_table
-where marketplace like 'US'
-limit 100;
-```
-
 ## Reference
 
 - [Athena Data Limit](https://docs.aws.amazon.com/athena/latest/ug/workgroups-setting-control-limits-cloudwatch.html)
@@ -609,3 +605,5 @@ limit 100;
 - [Glue notebook magics](https://docs.aws.amazon.com/glue/latest/dg/interactive-sessions-magics.html)
 
 - [Athena spark notebook magics](https://docs.aws.amazon.com/athena/latest/ug/notebooks-spark-magics.html)
+
+- [Athena Workgroup IAM Policy](https://docs.aws.amazon.com/athena/latest/ug/workgroups-iam-policy.html)
