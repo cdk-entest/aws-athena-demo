@@ -1,4 +1,4 @@
---- 
+---
 title: athena introduction
 description: getting started with athena
 author: haimtran
@@ -89,6 +89,16 @@ const sparkWorkGroup = new CfnWorkGroup(this, 'SparkWorkGroup', {
   }
 })
 ```
+## Create Table - Crawler
+
+- Example 1: amazon-review-pds/parquet
+- Example 2: amazon-review-pds/tsv
+
+It is quite straightfoward to create table using Glue Crawler
+
+- Create an IAM role for Glue Crawler
+- Create a Glue Crawler and specify the data source in S3
+- After the crawler complete, you can query the table from Athena
 
 ## Create Table - Parquet Data
 
@@ -341,16 +351,6 @@ from "ctas_table"
 where marketplace = 'VN';
 ```
 
-## Create Table - Crawler
-
-- Example 1: amazon-review-pds/parquet
-- Example 2: amazon-review-pds/tsv
-
-It is quite straightfoward to create table using Glue Crawler
-
-- Create an IAM role for Glue Crawler
-- Create a Glue Crawler and specify the data source in S3
-- After the crawler complete, you can query the table from Athena
 
 ## Parquet versus TSV
 
