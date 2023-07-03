@@ -118,7 +118,12 @@ SELECT id,
 	sold_out
 FROM sporting_event_iceberg FOR TIMESTAMP AS OF current_timestamp + interval '-10' minute;
 
--- check the id 21 preivously 
+-- check the id 21 in the past 
 SELECT *
 FROM v_sporting_event_previous_snapshot
 WHERE id = 21;
+
+-- check the id in the past
+SELECT *
+FROM sporting_event_iceberg FOR TIMESTAMP AS OF current_timestamp + interval '-15' minute
+WHERE id in (21);
