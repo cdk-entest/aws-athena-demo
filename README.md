@@ -35,60 +35,61 @@ Enum to select Athena query or PySpark
 
 ```ts
 export enum AthenaAnalyticEngine {
-  PySpark = 'PySpark engine version 3',
-  Athena = 'Athena engine version 3'
+  PySpark = "PySpark engine version 3",
+  Athena = "Athena engine version 3",
 }
 ```
 
 Create an Athena workgroup for SQL query
 
 ```ts
-const workgroup = new CfnWorkGroup(this, 'WorkGroupDemo', {
-  name: 'WorkGroupDemo',
-  description: 'demo',
+const workgroup = new CfnWorkGroup(this, "WorkGroupDemo", {
+  name: "WorkGroupDemo",
+  description: "demo",
   // destroy stack can delete workgroup event not empy
   recursiveDeleteOption: true,
-  state: 'ENABLED',
+  state: "ENABLED",
   workGroupConfiguration: {
     bytesScannedCutoffPerQuery: 107374182400,
     engineVersion: {
       // pyspark not support in cloudformation
       // available in some regions at this moment
-      selectedEngineVersion: AthenaAnalyticEngine.Athena
+      selectedEngineVersion: AthenaAnalyticEngine.Athena,
     },
     requesterPaysEnabled: true,
     publishCloudWatchMetricsEnabled: true,
     resultConfiguration: {
       // encryption default
-      outputLocation: `s3://${props.destS3BucketName}/`
-    }
-  }
-})
+      outputLocation: `s3://${props.destS3BucketName}/`,
+    },
+  },
+});
 ```
 
 Create an Athena workgroup with PySpark
 
 ```ts
-const sparkWorkGroup = new CfnWorkGroup(this, 'SparkWorkGroup', {
+const sparkWorkGroup = new CfnWorkGroup(this, "SparkWorkGroup", {
   name: sparkWorkGroupName,
-  description: 'spark',
+  description: "spark",
   recursiveDeleteOption: true,
-  state: 'ENABLED',
+  state: "ENABLED",
   workGroupConfiguration: {
     executionRole: role.roleArn,
     bytesScannedCutoffPerQuery: 107374182400,
     engineVersion: {
       // effectiveEngineVersion: "",
-      selectedEngineVersion: AthenaAnalyticEngine.PySpark
+      selectedEngineVersion: AthenaAnalyticEngine.PySpark,
     },
     requesterPaysEnabled: true,
     publishCloudWatchMetricsEnabled: false,
     resultConfiguration: {
-      outputLocation: `s3://${props.destS3BucketName}/`
-    }
-  }
-})
+      outputLocation: `s3://${props.destS3BucketName}/`,
+    },
+  },
+});
 ```
+
 ## Create Table - Crawler
 
 - Example 1: amazon-review-pds/parquet
@@ -235,12 +236,12 @@ msck repair table mytable;
 
 ## Create Table - CTAS
 
-- Convert data from tsv to parquet 
+- Convert data from tsv to parquet
 - CTAS means CREATE TABLE AS SELECT
 - Create a new table, parquet format from result of a query, same location
 - Create a new table, parquet format from result of a query, external location
 
-First, create a new table in the same location bucket. The partition key should placed at the last. This takes about 5 minutes 
+First, create a new table in the same location bucket. The partition key should placed at the last. This takes about 5 minutes
 
 ```sql
 create table if not exists ctas_tsv_to_parquet_table with (format = 'parquet') as
@@ -253,7 +254,7 @@ select "marketplace",
 from "amazon_reviews_tsv_table";
 ```
 
-Second, create the new table in an external location. This takes about 5 minutes 
+Second, create the new table in an external location. This takes about 5 minutes
 
 ```sql
 create table if not exists ctas_tsv_to_parquet_partitioned_table with (
@@ -278,14 +279,25 @@ from information_schema.columns
 where table_name = 'amazon_reviews_parquet_table'
 ```
 
-## Insert Table 
+Convert csv to parquet and save to a new S3 bucket
 
-- Insert select 
-- Insert values 
+```sql
+create table if not exists amazon_review_parquet with (
+	external_location = 's3://cdk-entest-videos/amazon-reviews-pds/parquet/',
+	format = 'parquet'
+)
+as select *
+from "amazon_reviews_tsv_table"
+```
 
-First create a table using ctas from parquet table 
+## Insert Table
 
-```sql 
+- Insert select
+- Insert values
+
+First create a table using ctas from parquet table
+
+```sql
 create table if not exists ctas_table_partitioned with (
 	format = 'parquet',
 	partitioned_by = array [ 'marketplace' ]
@@ -300,15 +312,15 @@ from "amazon_reviews_parquet_table"
 where marketplace in ('US', 'JP')
 ```
 
-Check the current output 
+Check the current output
 
-```sql 
+```sql
 select count(*) from "ctas_table_partitioned"
 ```
 
-Then insert data into the ctas_table by selecting from the parquet table 
+Then insert data into the ctas_table by selecting from the parquet table
 
-```sql 
+```sql
 insert into "ctas_table_partitioned"
 select "customer_id",
 	"review_id",
@@ -320,17 +332,17 @@ from "amazon_reviews_parquet_table"
 where marketplace in ('FR')
 ```
 
-Check the output after inserting 
+Check the output after inserting
 
-```sql 
+```sql
 select *
 from "ctas_table_partitioned"
 where marketplace = 'FR'
 ```
 
-Let insert values into ctas_table 
+Let insert values into ctas_table
 
-```sql 
+```sql
 insert into "ctas_table"
 values(
 		'VN',
@@ -342,15 +354,14 @@ values(
 	);
 ```
 
-Let check the output 
+Let check the output
 
-```sql 
+```sql
 select "marketplace",
 	"customer_id"
 from "ctas_table"
 where marketplace = 'VN';
 ```
-
 
 ## Parquet versus TSV
 
@@ -378,9 +389,9 @@ order by sum_rating desc
 - parquet: scanned 1.21 GB and runtime 38 seconds
 - check time in queue
 
-Compare the count row 
+Compare the count row
 
-```sql 
+```sql
 select count(*) as num_row from "amazon_reviews_parquet_table"
 ```
 
@@ -398,15 +409,15 @@ const secret = new aws_secretsmanager.Secret(this, `${props.userName}Secret`, {
   secretName: `${props.userName}Secret`,
   generateSecretString: {
     secretStringTemplate: JSON.stringify({ userName: props.userName }),
-    generateStringKey: 'password'
-  }
-})
+    generateStringKey: "password",
+  },
+});
 
 const user = new aws_iam.User(this, `${props.userName}IAMUSER`, {
   userName: props.userName,
-  password: secret.secretValueFromJson('password'),
-  passwordResetRequired: false
-})
+  password: secret.secretValueFromJson("password"),
+  passwordResetRequired: false,
+});
 ```
 
 ## Data Access via IAM
@@ -415,8 +426,8 @@ Option 1. Grant the DS to access all data
 
 ```ts
 user.addManagedPolicy(
-  aws_iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonAthenaFullAccess')
-)
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonAthenaFullAccess")
+);
 ```
 
 Option 2. Least priviledge so the DS only can access requested tables. For Glue, please [note that](https://docs.aws.amazon.com/glue/latest/dg/glue-specifying-resource-arns.html)
@@ -562,18 +573,18 @@ The full IAM policy attached to the DS IAM user
 ```ts
 const role = new aws_iam.Role(this, `GlueRoleFor-${props.pipelineName}`, {
   roleName: `GlueRoleFor-${props.pipelineName}`,
-  assumedBy: new aws_iam.ServicePrincipal('glue.amazonaws.com')
-})
+  assumedBy: new aws_iam.ServicePrincipal("glue.amazonaws.com"),
+});
 
 role.addManagedPolicy(
   aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
-    'service-role/AWSGlueServiceRole'
+    "service-role/AWSGlueServiceRole"
   )
-)
+);
 
 role.addManagedPolicy(
-  aws_iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy')
-)
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy")
+);
 ```
 
 Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gule role. The notebook need to pass role to the execution session, so there are to options
@@ -584,50 +595,50 @@ Then attach the same policy bove LeastPriviledgePolicyForDataScientist to the Gu
 ```ts
 const policy = new aws_iam.Policy(
   this,
-  'LeastPriviledgePolicyForGlueNotebookRole',
+  "LeastPriviledgePolicyForGlueNotebookRole",
   {
-    policyName: 'LeastPriviledgePolicyForGlueNotebookRole',
+    policyName: "LeastPriviledgePolicyForGlueNotebookRole",
     statements: [
       // pass iam role
       new aws_iam.PolicyStatement({
-        actions: ['iam:PassRole', 'iam:GetRole'],
+        actions: ["iam:PassRole", "iam:GetRole"],
         effect: Effect.ALLOW,
-        resources: ['*']
+        resources: ["*"],
       }),
       // athena
       new aws_iam.PolicyStatement({
-        actions: ['athena:*'],
+        actions: ["athena:*"],
         effect: Effect.ALLOW,
-        resources: ['*']
+        resources: ["*"],
       }),
       // access s3
       new aws_iam.PolicyStatement({
-        actions: ['s3:*'],
+        actions: ["s3:*"],
         effect: Effect.ALLOW,
         resources: [
           props.athenaResultBucketArn,
           `${props.athenaResultBucketArn}/*`,
           props.sourceBucketArn,
-          `${props.sourceBucketArn}/*`
-        ]
+          `${props.sourceBucketArn}/*`,
+        ],
       }),
       // access glue catalog
       new aws_iam.PolicyStatement({
-        actions: ['glue:*'],
+        actions: ["glue:*"],
         effect: Effect.ALLOW,
         resources: [
           `arn:aws:glue:${this.region}:*:table/${props.databaseName}/*`,
           `arn:aws:glue:${this.region}:*:database/${props.databaseName}*`,
-          `arn:aws:glue:${this.region}:*:*catalog`
-        ]
-      })
-    ]
+          `arn:aws:glue:${this.region}:*:*catalog`,
+        ],
+      }),
+    ],
   }
-)
+);
 ```
 
 ```ts
-policy.attachToUser(user)
+policy.attachToUser(user);
 ```
 
 ## Athena Spark Notebook
